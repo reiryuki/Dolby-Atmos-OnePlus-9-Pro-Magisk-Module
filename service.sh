@@ -47,6 +47,11 @@ if [ -d /my_product/etc ] && [ "$FILE" ]; then
     fi
   done
 fi
+DIR=/odm/bin/hw
+FILE=$DIR/vendor.dolby_v3_6.hardware.dms360@2.0-service
+if [ "`realpath $DIR`" == $DIR ] && [ -f $FILE ]; then
+  mount -o bind $MODPATH/system/vendor/$FILE $FILE
+fi
 
 # restart
 killall audioserver
@@ -68,7 +73,7 @@ done
 }
 
 # stop
-NAME="dms-hal-1-0 dms-hal-2-0" #dms-v36-hal-2-0
+NAME="dms-hal-1-0 dms-hal-2-0 dms-v36-hal-2-0"
 stop_service
 
 # run
