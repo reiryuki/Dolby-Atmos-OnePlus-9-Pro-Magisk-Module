@@ -256,7 +256,8 @@ for FILES in $FILE; do
 done
 }
 early_init_mount_dir() {
-if echo $MAGISK_VER | grep -Eq delta; then
+if echo $MAGISK_VER | grep -Eq delta\
+&& [ "`grep_prop dolby.skip.early $OPTIONALS`" != 1 ]; then
   EIM=true
   ACTIVEEIMDIR=$MAGISKTMP/mirror/early-mount
   if [ -L $ACTIVEEIMDIR ]; then
@@ -381,8 +382,7 @@ for NAMES in $NAME; do
 done
 }
 patch_manifest_overlay_d() {
-if [ "`grep_prop dolby.skip.early $OPTIONALS`" != 1 ]\
-&& echo $MAGISK_VER | grep -Eq delta; then
+if [ $EIM == true ]; then
   if [ "$BOOTMODE" == true ]; then
     SRC=$MAGISKTMP/mirror/system/etc/vintf/manifest.xml
   else
@@ -415,13 +415,10 @@ if [ "`grep_prop dolby.skip.early $OPTIONALS`" != 1 ]\
   else
     EIM=false
   fi
-else
-  EIM=false
 fi
 }
 patch_hwservice_overlay_d() {
-if [ "`grep_prop dolby.skip.early $OPTIONALS`" != 1 ]\
-&& echo $MAGISK_VER | grep -Eq delta; then
+if [ $EIM == true ]; then
   if [ "$BOOTMODE" == true ]; then
     SRC=$MAGISKTMP/mirror/system/etc/selinux/plat_hwservice_contexts
   else
@@ -445,8 +442,6 @@ vendor.dolby.hardware.dms::IDms u:object_r:hal_dms_hwservice:s0' $DES
   else
     EIM=false
   fi
-else
-  EIM=false
 fi
 }
 
@@ -485,6 +480,63 @@ chcon -R u:object_r:system_lib_file:s0 $MODPATH/system_support/lib*
 chcon -R u:object_r:same_process_hal_file:s0 $MODPATH/system_support/vendor/lib*
 NAME=`ls $MODPATH/system_support/vendor/lib`
 find_file
+
+# function
+check_function() {
+ui_print "- Checking"
+ui_print "$NAME"
+ui_print "  function at"
+ui_print "$DIR$FILE"
+ui_print "  Please wait..."
+if ! grep -Eq $NAME $DIR$FILE; then
+  ui_print "  ! Function not found."
+  if [ "`grep_prop change.hidlbase $OPTIONALS`" == 1 ]\
+  && [ "$API" -ge 30 ]; then
+    sed -i 's/^change.hidlbase=1/change.hidlbase=0/' $OPTIONALS
+    ui_print "  Installing new"
+    ui_print "$DIR$FILE..."
+    ui_print "  If your device reboot automatically, then install this"
+    ui_print "  module again after reboot."
+    sleep 10
+    cp -f $MODPATH/system_support$FILE $DIR$FILE
+    if ! grep -Eq $NAME $DIR$FILE; then
+      ui_print "  ! Installation failed."
+      if [ $EIM == true ]; then
+        ui_print "  Installing new /system$FILE systemlessly"
+        ui_print "  using early init mount..."
+        mkdir -p $EIMDIR/system/$FILE
+        cp -f $MODPATH/system_support$FILE $EIMDIR/system/$FILE
+      else
+        ui_print "  Using new /system$FILE systemlessly."
+        cp -f $MODPATH/system_support$FILE $MODPATH/system/$FILE
+      fi
+    fi
+  else
+    if [ "$API" -lt 30 ]; then
+      ui_print "  Unsupported ROM."
+      abort
+    else
+      ui_print "  Using new /system$FILE systemlessly."
+      cp -f $MODPATH/system_support$FILE $MODPATH/system/$FILE
+    fi
+  fi
+fi
+ui_print " "
+}
+
+# check
+if [ "$BOOTMODE" == true ]; then
+  DIR=`realpath $MAGISKTMP/mirror/system`
+else
+  DIR=`realpath /system`
+fi
+if [ "$IS64BIT" == true ]; then
+  FILE=/lib64/libhidlbase.so
+else
+  FILE=/lib/libhidlbase.so
+fi
+NAME=_ZN7android8hardware7details17gBnConstructorMapE
+check_function
 rm -rf $MODPATH/system_support
 
 # patch manifest.xml
@@ -729,7 +781,7 @@ fi
 # hide
 APP="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
 hide_oat
-APP="MusicFX MotoDolbyV3 MotoDolbyDax3 OPSoundTuner AudioEffectCenter"
+APP="MusicFX MotoDolbyV3 MotoDolbyDax3 OPSoundTuner"
 for APPS in $APP; do
   hide_app
 done
