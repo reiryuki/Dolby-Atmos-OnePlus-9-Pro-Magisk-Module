@@ -21,7 +21,7 @@ magiskpolicy --live "type same_process_hal_file"
 magiskpolicy --live "allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app hal_audio_default mtk_hal_audio audioserver } { default_android_hwservice hal_dms_hwservice dms_hwservice } hwservice_manager find"
 
 # service_manager
-magiskpolicy --live "allow daxservice_app permission_checker_service service_manager find"
+magiskpolicy --live "allow daxservice_app { permission_checker_service game_service netstats_service content_capture_service } service_manager find"
 
 # binder
 magiskpolicy --live "dontaudit { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } hal_dms_default binder call"
@@ -42,6 +42,8 @@ magiskpolicy --live "dontaudit zygote { device unlabeled } file write"
 magiskpolicy --live "allow     zygote { device unlabeled } file write"
 magiskpolicy --live "dontaudit init system_file file mounton"
 magiskpolicy --live "allow     init system_file file mounton"
+magiskpolicy --live "dontaudit daxservice_app default_prop file read"
+magiskpolicy --live "allow     daxservice_app default_prop file read"
 
 # chr_file
 magiskpolicy --live "dontaudit { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } device chr_file { read write open getattr ioctl }"
@@ -50,6 +52,10 @@ magiskpolicy --live "allow     { system_app priv_app platform_app untrusted_app_
 # dir
 magiskpolicy --live "dontaudit { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } migt_file dir search"
 magiskpolicy --live "allow     { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } migt_file dir search"
+
+# unix_stream_socket
+magiskpolicy --live "dontaudit { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } zygote unix_stream_socket getopt"
+magiskpolicy --live "allow     { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } zygote unix_stream_socket getopt"
 
 # additional
 magiskpolicy --live "allow { hal_audio_default mtk_hal_audio audioserver } system_suspend_hwservice hwservice_manager find"
