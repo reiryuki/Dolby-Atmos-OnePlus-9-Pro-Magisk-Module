@@ -33,6 +33,9 @@ fi
 
 # optionals
 OPTIONALS=/sdcard/optionals.prop
+if [ ! -f $OPTIONALS ]; then
+  touch $OPTIONALS
+fi
 
 # info
 MODVER=`grep_prop version $MODPATH/module.prop`
@@ -78,13 +81,39 @@ if [ "$BOOTMODE" != true ]; then
   mount -o rw -t auto /dev/block/bootdevice/by-name/metadata /metadata
 fi
 
-# sepolicy.rule
-FILE=$MODPATH/sepolicy.sh
-DES=$MODPATH/sepolicy.rule
-if [ -f $FILE ] && [ "`grep_prop sepolicy.sh $OPTIONALS`" != 1 ]; then
+# function
+check_function() {
+ui_print "- Checking"
+ui_print "$NAME"
+ui_print "  function at"
+ui_print "$FILE"
+ui_print "  Please wait..."
+if ! grep -Eq $NAME $FILE; then
+  ui_print "  ! Function not found."
+  ui_print "    Unsupported ROM."
+  abort
+fi
+ui_print " "
+}
+
+# check
+NAME=_ZN7android8hardware7details17gBnConstructorMapE
+TARGET=vendor.dolby.hardware.dms@1.0.so
+if [ "$IS64BIT" == true ]; then
+  LIST=`strings $MODPATH/system/vendor/lib64/$TARGET | grep lib | grep .so`
+  FILE=`for LISTS in $LIST; do echo $SYSTEM/lib64/$LISTS; done`
+  check_function
+fi
+LIST=`strings $MODPATH/system/vendor/lib/$TARGET | grep lib | grep .so`
+FILE=`for LISTS in $LIST; do echo $SYSTEM/lib/$LISTS; done`
+check_function
+
+# sepolicy
+FILE=$MODPATH/sepolicy.rule
+DES=$MODPATH/sepolicy.pfsd
+if [ "`grep_prop sepolicy.sh $OPTIONALS`" == 1 ]\
+&& [ -f $FILE ]; then
   mv -f $FILE $DES
-  sed -i 's/magiskpolicy --live "//g' $DES
-  sed -i 's/"//g' $DES
 fi
 
 # .aml.sh
@@ -110,12 +139,10 @@ fi
 
 # cleaning
 ui_print "- Cleaning..."
-PKG="com.dolby.daxappui
-     com.dolby.daxservice
-     com.dolby.atmos"
+PKG=`cat $MODPATH/package.txt`
 if [ "$BOOTMODE" == true ]; then
   for PKGS in $PKG; do
-    RES=`pm uninstall $PKGS`
+    RES=`pm uninstall $PKGS 2>/dev/null`
   done
 fi
 rm -f /data/vendor/dolby/dap_sqlite3.db
@@ -499,34 +526,11 @@ remount_rw
 # early init mount dir
 early_init_mount_dir
 
-# function
-check_function() {
-ui_print "- Checking"
-ui_print "$NAME"
-ui_print "  function at"
-ui_print "$FILE"
-ui_print "  Please wait..."
-if ! grep -Eq $NAME $FILE; then
-  ui_print "  ! Function not found."
-  ui_print "    Unsupported ROM."
-  remount_ro
-  abort
-fi
-ui_print " "
-}
-
 # check
 chcon -R u:object_r:system_lib_file:s0 $MODPATH/system_support/lib*
 chcon -R u:object_r:same_process_hal_file:s0 $MODPATH/system_support/vendor/lib*
 NAME="libhidltransport.so libhwbinder.so"
 find_file
-NAME=_ZN7android8hardware7details17gBnConstructorMapE
-if [ "$IS64BIT" == true ]; then
-  FILE=$SYSTEM/lib64/libhidlbase.so
-  check_function
-fi
-FILE=$SYSTEM/lib/libhidlbase.so
-check_function
 rm -rf $MODPATH/system_support
 
 # patch manifest.xml
@@ -557,7 +561,7 @@ if ! grep -A2 vendor.dolby.hardware.dms $FILE | grep -Eq 1.0; then
     ui_print "- Using systemless manifest.xml patch."
     ui_print "  On some ROMs, it causes bugs or even makes bootloop"
     ui_print "  because not allowed to restart hwservicemanager."
-    ui_print "  You can fix this by using Magisk Delta Canary."
+    ui_print "  You can fix this by using Magisk Delta."
     ui_print " "
   fi
   FILE="$MAGISKTMP/mirror/*/etc/vintf/manifest.xml
@@ -650,35 +654,6 @@ DIR=$VENDOR/euclid/product/app/$APPS
 MODDIR=$MODPATH/system/vendor/euclid/product/app/$APPS
 replace_dir
 }
-check_app() {
-if [ "$BOOTMODE" == true ]\
-&& [ "`grep_prop hide.parts $OPTIONALS`" == 1 ]; then
-  for APPS in $APP; do
-    FILE=`find $SYSTEM $PRODUCT $SYSTEM_EXT $VENDOR\
-               $MY_PRODUCT -type f -name $APPS.apk`
-    if [ "$FILE" ]; then
-      ui_print "  Checking $APPS.apk"
-      ui_print "  Please wait..."
-      if grep -Eq $UUID $FILE; then
-        ui_print "  Your $APPS.apk will be hidden"
-        hide_app
-      fi
-    fi
-  done
-fi
-}
-detect_soundfx() {
-if [ "$BOOTMODE" == true ]\
-&& dumpsys media.audio_flinger | grep -Eq $UUID; then
-  ui_print "- $NAME is detected."
-  ui_print "  It may be conflicting with this module."
-  ui_print "  You can type:"
-  ui_print "  disable.dirac=1"
-  ui_print "  inside $OPTIONALS"
-  ui_print "  and reinstall this module if you want to disable it."
-  ui_print " "
-fi
-}
 
 # hide
 APP="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
@@ -687,87 +662,6 @@ APP="MusicFX MotoDolbyV3 MotoDolbyDax3 OPSoundTuner"
 for APPS in $APP; do
   hide_app
 done
-if [ "`grep_prop disable.dirac $OPTIONALS`" != 0 ]\
-&& [ "`grep_prop disable.misoundfx $OPTIONALS`" != 0 ]; then
-  APP=MiSound
-  for APPS in $APP; do
-    hide_app
-  done
-fi
-if [ "`grep_prop disable.dirac $OPTIONALS`" != 0 ]; then
-  APP="Dirac DiracAudioControlService"
-  for APPS in $APP; do
-    hide_app
-  done
-fi
-
-# dirac & misoundfx
-FILE=$MODPATH/.aml.sh
-APP="XiaomiParts ZenfoneParts ZenParts GalaxyParts
-     KharaMeParts DeviceParts PocoParts"
-NAME='dirac soundfx'
-UUID=e069d9e0-8329-11df-9168-0002a5d5c51b
-if [ "`grep_prop disable.dirac $OPTIONALS`" != 0 ]; then
-  ui_print "- $NAME will be disabled"
-  sed -i 's/#2//g' $FILE
-  check_app
-  ui_print " "
-else
-  detect_soundfx
-fi
-FILE=$MODPATH/.aml.sh
-NAME=misoundfx
-UUID=5b8e36a5-144a-4c38-b1d7-0002a5d5c51b
-if [ "`grep_prop disable.misoundfx $OPTIONALS`" != 0 ]; then
-  ui_print "- $NAME will be disabled"
-  sed -i 's/#3//g' $FILE
-  check_app
-  ui_print " "
-else
-  if [ "$BOOTMODE" == true ]\
-  && dumpsys media.audio_flinger | grep -Eq $UUID; then
-    ui_print "- $NAME is detected."
-    ui_print "  It may be conflicting with this module."
-    ui_print "  You can type:"
-    ui_print "  disable.misoundfx=1"
-    ui_print "  inside $OPTIONALS"
-    ui_print "  and reinstall this module if you want to disable it."
-    ui_print " "
-  fi
-fi
-
-# dirac_controller
-FILE=$MODPATH/.aml.sh
-NAME='dirac_controller soundfx'
-UUID=b437f4de-da28-449b-9673-667f8b964304
-if [ "`grep_prop disable.dirac $OPTIONALS`" != 0 ]; then
-  ui_print "- $NAME will be disabled"
-  ui_print " "
-else
-  detect_soundfx
-fi
-
-# dirac_music
-FILE=$MODPATH/.aml.sh
-NAME='dirac_music soundfx'
-UUID=b437f4de-da28-449b-9673-667f8b9643fe
-if [ "`grep_prop disable.dirac $OPTIONALS`" != 0 ]; then
-  ui_print "- $NAME will be disabled"
-  ui_print " "
-else
-  detect_soundfx
-fi
-
-# dirac_gef
-FILE=$MODPATH/.aml.sh
-NAME='dirac_gef soundfx'
-UUID=3799D6D1-22C5-43C3-B3EC-D664CF8D2F0D
-if [ "`grep_prop disable.dirac $OPTIONALS`" != 0 ]; then
-  ui_print "- $NAME will be disabled"
-  ui_print " "
-else
-  detect_soundfx
-fi
 
 # ui app
 if [ "`grep_prop dolby.rc1 $OPTIONALS`" == 1 ]; then
@@ -968,7 +862,8 @@ ui_print " "
 
 # vendor_overlay
 DIR=/product/vendor_overlay
-if [ -d $DIR ]; then
+if [ "`grep_prop fix.vendor_overlay $OPTIONALS`" == 1 ]\
+&& [ -d $DIR ]; then
   ui_print "- Fixing $DIR mount..."
   cp -rf $DIR/*/* $MODPATH/system/vendor
   ui_print " "
