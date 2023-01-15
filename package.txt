@@ -1,0 +1,3 @@
+com.dolby.daxappui
+com.dolby.daxservice
+com.dolby.atmos
