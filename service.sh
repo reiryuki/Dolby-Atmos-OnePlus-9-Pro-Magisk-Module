@@ -11,6 +11,17 @@ resetprop ro.feature.dolby_enable true
 resetprop vendor.audio.dolby.ds2.enabled false
 resetprop vendor.audio.dolby.ds2.hardbypass false
 
+# restart
+if [ "$API" -ge 24 ]; then
+  SVC=audioserver
+else
+  SVC=mediaserver
+fi
+PID=`pidof $SVC`
+if [ "$PID" ]; then
+  killall $SVC
+fi
+
 # function
 stop_service() {
 for NAMES in $NAME; do
@@ -46,6 +57,7 @@ killall android.hardware.sensors@1.0-service
 killall android.hardware.sensors@2.0-service-mediatek
 killall android.hardware.light-service.mt6768
 killall android.hardware.lights-service.xiaomi_mithorium
+killall android.hardware.lights-service.mediatek
 CAMERA=`realpath /*/bin/hw/android.hardware.camera.provider@*-service_64`
 [ "$CAMERA" ] && killall $CAMERA
 
@@ -104,14 +116,16 @@ if [ ! -d $MY_PRODUCT ] && [ -d /my_product/etc ]\
   done
 fi
 
-# restart
-PID=`pidof audioserver`
-if [ "$PID" ]; then
-  killall audioserver
-fi
-
 # wait
 sleep 40
+
+# allow
+PKG=com.dolby.daxappui
+if pm list packages | grep $PKG ; then
+  if [ "$API" -ge 30 ]; then
+    appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
+  fi
+fi
 
 # allow
 PKG=com.dolby.daxservice
@@ -119,7 +133,6 @@ if pm list packages | grep $PKG ; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
   fi
-  killall $PKG
 fi
 
 # allow
@@ -128,16 +141,37 @@ if pm list packages | grep $PKG ; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
   fi
-  killall $PKG
 fi
 
-# allow
-PKG=com.dolby.daxappui
-if pm list packages | grep $PKG ; then
-  if [ "$API" -ge 30 ]; then
-    appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
-  fi
-  killall $PKG
+# function
+wait_audioserver() {
+PID=`pidof $SVC`
+sleep 180
+NEXTPID=`pidof $SVC`
+}
+
+# wait
+if [ "$API" -ge 24 ]; then
+  SVC=audioserver
+else
+  SVC=mediaserver
 fi
+if [ "`getprop init.svc.$SVC`" == running ]; then
+  until [ "$PID" ] && [ "$NEXTPID" ]\
+  && [ "$PID" == "$NEXTPID" ]; do
+    wait_audioserver
+  done
+else
+  start $SVC
+fi
+
+# restart
+killall com.dolby.daxservice com.dolby.daxappui com.dolby.atmos
+
+
+
+
+
+
 
 
