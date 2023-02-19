@@ -100,12 +100,12 @@ ui_print " "
 NAME=_ZN7android8hardware7details17gBnConstructorMapE
 TARGET=vendor.dolby.hardware.dms@1.0.so
 if [ "$IS64BIT" == true ]; then
-  LIST=`strings $MODPATH/system/vendor/lib64/$TARGET | grep lib | grep .so`
-  FILE=`for LISTS in $LIST; do echo $SYSTEM/lib64/$LISTS; done`
+  LISTS=`strings $MODPATH/system/vendor/lib64/$TARGET | grep ^lib | grep .so`
+  FILE=`for LIST in $LISTS; do echo $SYSTEM/lib64/$LIST; done`
   check_function
 fi
-LIST=`strings $MODPATH/system/vendor/lib/$TARGET | grep lib | grep .so`
-FILE=`for LISTS in $LIST; do echo $SYSTEM/lib/$LISTS; done`
+LISTS=`strings $MODPATH/system/vendor/lib/$TARGET | grep ^lib | grep .so`
+FILE=`for LIST in $LISTS; do echo $SYSTEM/lib/$LIST; done`
 check_function
 
 # sepolicy
@@ -665,7 +665,7 @@ done
 
 # ui app
 if [ "`grep_prop dolby.rc1 $OPTIONALS`" == 1 ]; then
-  ui_print "- Using RC1 app..."
+  ui_print "- Using RC1 app instead of RC4"
   APP="DaxUI daxService"
   ui_print " "
 else
@@ -874,7 +874,7 @@ NAME=DolbyUninstaller.zip
 cp -f $MODPATH/$NAME /sdcard
 rm -f $MODPATH/$NAME
 ui_print "- Flash /sdcard/$NAME"
-ui_print "  via recovery if you got bootloop"
+ui_print "  via recovery only if you got bootloop"
 ui_print " "
 
 
