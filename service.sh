@@ -167,7 +167,7 @@ else
 fi
 }
 
-# checkcheck
+# check
 for SERVICE in $SERVICES; do
   if ! pidof $SERVICE; then
     $SERVICE &
