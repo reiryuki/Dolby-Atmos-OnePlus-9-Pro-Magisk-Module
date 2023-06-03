@@ -1,6 +1,5 @@
 MODPATH=${0%/*}
 API=`getprop ro.build.version.sdk`
-AML=/data/adb/modules/aml
 
 # debug
 exec 2>$MODPATH/debug.log
@@ -13,13 +12,13 @@ resetprop vendor.audio.dolby.ds2.hardbypass false
 
 # restart
 if [ "$API" -ge 24 ]; then
-  SERVER=audioserver
+  SVR=audioserver
 else
-  SERVER=mediaserver
+  SVR=mediaserver
 fi
-PID=`pidof $SERVER`
+PID=`pidof $SVR`
 if [ "$PID" ]; then
-  killall $SERVER
+  killall $SVR
 fi
 
 # stop
@@ -32,11 +31,11 @@ for NAME in $NAMES; do
 done
 
 # run
-SERVICES=`realpath /vendor`/bin/hw/vendor.dolby.hardware.dms@1.0-service
-for SERVICE in $SERVICES; do
-  killall $SERVICE
-  $SERVICE &
-  PID=`pidof $SERVICE`
+SVCS=`realpath /vendor`/bin/hw/vendor.dolby.hardware.dms@1.0-service
+for SVC in $SVCS; do
+  killall $SVC
+  $SVC &
+  PID=`pidof $SVC`
 done
 
 # restart
@@ -57,55 +56,46 @@ killall android.hardware.sensors@2.0-service.multihal
 sleep 20
 
 # aml fix
-DIR=$AML/system/vendor/odm/etc
+AML=/data/adb/modules/aml
+if [ -L $AML/system/vendor ]\
+&& [ -d $AML/vendor ]; then
+  DIR=$AML/vendor/odm/etc
+else
+  DIR=$AML/system/vendor/odm/etc
+fi
 if [ -d $DIR ] && [ ! -f $AML/disable ]; then
   chcon -R u:object_r:vendor_configs_file:s0 $DIR
 fi
-
-# magisk
-if [ -d /sbin/.magisk ]; then
-  MAGISKTMP=/sbin/.magisk
+AUD=`grep AUD= $MODPATH/copy.sh | sed -e 's|AUD=||g' -e 's|"||g'`
+if [ -L $AML/system/vendor ]\
+&& [ -d $AML/vendor ]; then
+  DIR=$AML/vendor
 else
-  MAGISKTMP=`realpath /dev/*/.magisk`
-fi
-
-# path
-MIRROR=$MAGISKTMP/mirror
-SYSTEM=`realpath $MIRROR/system`
-VENDOR=`realpath $MIRROR/vendor`
-ODM=`realpath $MIRROR/odm`
-MY_PRODUCT=`realpath $MIRROR/my_product`
-
-# mount
-NAME="*audio*effects*.conf -o -name *audio*effects*.xml -o -name *policy*.conf -o -name *policy*.xml"
-if [ -d $AML ] && [ ! -f $AML/disable ]\
-&& find $AML/system/vendor -type f -name $NAME; then
-  NAME="*audio*effects*.conf -o -name *audio*effects*.xml"
-#p  NAME="*audio*effects*.conf -o -name *audio*effects*.xml -o -name *policy*.conf -o -name *policy*.xml"
   DIR=$AML/system/vendor
-else
-  DIR=$MODPATH/system/vendor
 fi
-FILES=`find $DIR/etc -maxdepth 1 -type f -name $NAME`
-if [ ! -d $ODM ] && [ "`realpath /odm/etc`" == /odm/etc ]\
-&& [ "$FILES" ]; then
-  for FILE in $FILES; do
-    DES="/odm$(echo $FILE | sed "s|$DIR||")"
-    if [ -f $DES ]; then
-      umount $DES
-      mount -o bind $FILE $DES
-    fi
-  done
-fi
-if [ ! -d $MY_PRODUCT ] && [ -d /my_product/etc ]\
-&& [ "$FILES" ]; then
-  for FILE in $FILES; do
-    DES="/my_product$(echo $FILE | sed "s|$DIR||")"
-    if [ -f $DES ]; then
-      umount $DES
-      mount -o bind $FILE $DES
-    fi
-  done
+FILES=`find $DIR -type f -name $AUD`
+if [ -d $AML ] && [ ! -f $AML/disable ]\
+&& find $DIR -type f -name $AUD; then
+  if ! grep '/odm' $AML/post-fs-data.sh && [ -d /odm ]\
+  && [ "`realpath /odm/etc`" == /odm/etc ]; then
+    for FILE in $FILES; do
+      DES=/odm`echo $FILE | sed "s|$DIR||g"`
+      if [ -f $DES ]; then
+        umount $DES
+        mount -o bind $FILE $DES
+      fi
+    done
+  fi
+  if ! grep '/my_product' $AML/post-fs-data.sh\
+  && [ -d /my_product ]; then
+    for FILE in $FILES; do
+      DES=/my_product`echo $FILE | sed "s|$DIR||g"`
+      if [ -f $DES ]; then
+        umount $DES
+        mount -o bind $FILE $DES
+      fi
+    done
+  fi
 fi
 
 # wait
@@ -119,6 +109,11 @@ if pm list packages | grep $PKG ; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
   fi
+  PKGOPS=`appops get $PKG`
+  UID=`dumpsys package $PKG 2>/dev/null | grep -m 1 userId= | sed 's/    userId=//g'`
+  if [ "$UID" -gt 9999 ]; then
+    UIDOPS=`appops get --uid "$UID"`
+  fi
 fi
 
 # allow
@@ -126,6 +121,11 @@ PKG=com.dolby.daxservice
 if pm list packages | grep $PKG ; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
+  fi
+  PKGOPS=`appops get $PKG`
+  UID=`dumpsys package $PKG 2>/dev/null | grep -m 1 userId= | sed 's/    userId=//g'`
+  if [ "$UID" -gt 9999 ]; then
+    UIDOPS=`appops get --uid "$UID"`
   fi
 fi
 
@@ -135,12 +135,17 @@ if pm list packages | grep $PKG ; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
   fi
+  PKGOPS=`appops get $PKG`
+  UID=`dumpsys package $PKG 2>/dev/null | grep -m 1 userId= | sed 's/    userId=//g'`
+  if [ "$UID" -gt 9999 ]; then
+    UIDOPS=`appops get --uid "$UID"`
+  fi
 fi
 
 # function
 stop_log() {
 FILE=$MODPATH/debug.log
-SIZE=`du $FILE | sed "s|$FILE||"`
+SIZE=`du $FILE | sed "s|$FILE||g"`
 if [ "$LOG" != stopped ] && [ "$SIZE" -gt 50 ]; then
   exec 2>/dev/null
   LOG=stopped
@@ -150,28 +155,28 @@ check_audioserver() {
 if [ "$NEXTPID" ]; then
   PID=$NEXTPID
 else
-  PID=`pidof $SERVER`
+  PID=`pidof $SVR`
 fi
-sleep 10
+sleep 15
 stop_log
-NEXTPID=`pidof $SERVER`
-if [ "`getprop init.svc.$SERVER`" != stopped ]; then
+NEXTPID=`pidof $SVR`
+if [ "`getprop init.svc.$SVR`" != stopped ]; then
   until [ "$PID" != "$NEXTPID" ]; do
     check_audioserver
   done
   killall $PROC
   check_audioserver
 else
-  start $SERVER
+  start $SVR
   check_audioserver
 fi
 }
 
 # check
-for SERVICE in $SERVICES; do
-  if ! pidof $SERVICE; then
-    $SERVICE &
-    PID=`pidof $SERVICE`
+for SVC in $SVCS; do
+  if ! pidof $SVC; then
+    $SVC &
+    PID=`pidof $SVC`
   fi
 done
 PROC="com.dolby.daxservice com.dolby.daxappui com.dolby.atmos"
