@@ -229,7 +229,7 @@ fi
 # check
 NAME=_ZN7android8hardware7details17gBnConstructorMapE
 DES=vendor.dolby.hardware.dms@1.0.so
-LIB=libhidltransport.so
+LIB=libhidlbase.so
 if [ "$IS64BIT" == true ]; then
   LISTS=`strings $MODPATH/system/vendor/lib64/$DES | grep ^lib | grep .so`
   FILE=`for LIST in $LISTS; do echo $SYSTEM/lib64/$LIST; done`
@@ -239,8 +239,8 @@ if [ "$IS64BIT" == true ]; then
   ui_print "$FILE"
   ui_print "  Please wait..."
   if ! grep -q $NAME $FILE; then
-    ui_print "  Using new $LIB 64."
-    cp -f $MODPATH/system_support/lib64/$LIB $MODPATH/system/lib64
+    ui_print "  Using new $LIB 64"
+    mv -f $MODPATH/system_support/lib64/$LIB $MODPATH/system/lib64
   fi
   ui_print " "
 fi
@@ -252,8 +252,8 @@ ui_print "  function at"
 ui_print "$FILE"
 ui_print "  Please wait..."
 if ! grep -q $NAME $FILE; then
-  ui_print "  Using new $LIB."
-  cp -f $MODPATH/system_support/lib/$LIB $MODPATH/system/lib
+  ui_print "  Using new $LIB"
+  mv -f $MODPATH/system_support/lib/$LIB $MODPATH/system/lib
 fi
 ui_print " "
 
@@ -269,6 +269,7 @@ fi
 mv -f $MODPATH/aml.sh $MODPATH/.aml.sh
 
 # mod ui
+MOD_UI=false
 if [ "`grep_prop mod.ui $OPTIONALS`" == 1 ]; then
   APP=DaxUI
   FILE=/sdcard/$APP.apk
@@ -278,6 +279,7 @@ if [ "`grep_prop mod.ui $OPTIONALS`" == 1 ]; then
     cp -f $FILE $DIR
     chmod 0644 $DIR/$APP.apk
     ui_print "  Applied"
+    MOD_UI=true
   else
     ui_print "  ! There is no $FILE file."
     ui_print "    Please place the apk to your internal storage first"
@@ -285,6 +287,16 @@ if [ "`grep_prop mod.ui $OPTIONALS`" == 1 ]; then
   fi
   ui_print " "
 fi
+
+# 36 dB
+PROP=`grep_prop dolby.gain $OPTIONALS`
+if [ "$MOD_UI" != true ] && [ "$PROP" ]\
+&& [ "$PROP" -gt 192 ]; then
+  ui_print "- Using max/min limit 36 dB"
+  cp -rf $MODPATH/system_36dB/* $MODPATH/system
+fi
+rm -rf $MODPATH/system_36dB
+ui_print " "
 
 # cleaning
 ui_print "- Cleaning..."
@@ -305,39 +317,37 @@ ui_print " "
 
 # function
 conflict() {
-DIR=/data/adb/modules_update/$NAME
-if [ -f $DIR/uninstall.sh ]; then
-  sh $DIR/uninstall.sh
-fi
-rm -rf $DIR
-DIR=/data/adb/modules/$NAME
-rm -f $DIR/update
-touch $DIR/remove
-FILE=/data/adb/modules/$NAME/uninstall.sh
-if [ -f $FILE ]; then
-  sh $FILE
-  rm -f $FILE
-fi
-rm -rf /metadata/magisk/$NAME
-rm -rf /mnt/vendor/persist/magisk/$NAME
-rm -rf /persist/magisk/$NAME
-rm -rf /data/unencrypted/magisk/$NAME
-rm -rf /cache/magisk/$NAME
+for NAME in $NAMES; do
+  DIR=/data/adb/modules_update/$NAME
+  if [ -f $DIR/uninstall.sh ]; then
+    sh $DIR/uninstall.sh
+  fi
+  rm -rf $DIR
+  DIR=/data/adb/modules/$NAME
+  rm -f $DIR/update
+  touch $DIR/remove
+  FILE=/data/adb/modules/$NAME/uninstall.sh
+  if [ -f $FILE ]; then
+    sh $FILE
+    rm -f $FILE
+  fi
+  rm -rf /metadata/magisk/$NAME
+  rm -rf /mnt/vendor/persist/magisk/$NAME
+  rm -rf /persist/magisk/$NAME
+  rm -rf /data/unencrypted/magisk/$NAME
+  rm -rf /cache/magisk/$NAME
+done
 }
 
 # conflict
-NAMES="dolbyatmos
-       DolbyAudio
-       MotoDolby"
-for NAME in $NAMES; do
-  conflict
-done
-NAME=SoundEnhancement
+NAMES="dolbyatmos DolbyAudio MotoDolby"
+conflict
+NAMES=SoundEnhancement
 FILE=/data/adb/modules/$NAME/module.prop
 if grep -q 'Dolby Atmos Xperia' $FILE; then
   conflict
 fi
-NAME=MiSound
+NAMES=MiSound
 FILE=/data/adb/modules/$NAME/module.prop
 if grep -q 'and Dolby Atmos' $FILE; then
   conflict
@@ -767,51 +777,46 @@ if [ -d $DIR ]; then
 fi
 }
 hide_app() {
-DIR=$SYSTEM/app/$APP
-MODDIR=/system/app/$APP
-replace_dir
-DIR=$SYSTEM/priv-app/$APP
-MODDIR=/system/priv-app/$APP
-replace_dir
-DIR=$PRODUCT/app/$APP
-MODDIR=/system/product/app/$APP
-replace_dir
-DIR=$PRODUCT/priv-app/$APP
-MODDIR=/system/product/priv-app/$APP
-replace_dir
-DIR=$MY_PRODUCT/app/$APP
-MODDIR=/system/product/app/$APP
-replace_dir
-DIR=$MY_PRODUCT/priv-app/$APP
-MODDIR=/system/product/priv-app/$APP
-replace_dir
-DIR=$PRODUCT/preinstall/$APP
-MODDIR=/system/product/preinstall/$APP
-replace_dir
-DIR=$SYSTEM_EXT/app/$APP
-MODDIR=/system/system_ext/app/$APP
-replace_dir
-DIR=$SYSTEM_EXT/priv-app/$APP
-MODDIR=/system/system_ext/priv-app/$APP
-replace_dir
-DIR=$VENDOR/app/$APP
-MODDIR=/system/vendor/app/$APP
-replace_dir
-DIR=$VENDOR/euclid/product/app/$APP
-MODDIR=/system/vendor/euclid/product/app/$APP
-replace_dir
+for APP in $APPS; do
+  DIR=$SYSTEM/app/$APP
+  MODDIR=/system/app/$APP
+  replace_dir
+  DIR=$SYSTEM/priv-app/$APP
+  MODDIR=/system/priv-app/$APP
+  replace_dir
+  DIR=$PRODUCT/app/$APP
+  MODDIR=/system/product/app/$APP
+  replace_dir
+  DIR=$PRODUCT/priv-app/$APP
+  MODDIR=/system/product/priv-app/$APP
+  replace_dir
+  DIR=$MY_PRODUCT/app/$APP
+  MODDIR=/system/product/app/$APP
+  replace_dir
+  DIR=$MY_PRODUCT/priv-app/$APP
+  MODDIR=/system/product/priv-app/$APP
+  replace_dir
+  DIR=$PRODUCT/preinstall/$APP
+  MODDIR=/system/product/preinstall/$APP
+  replace_dir
+  DIR=$SYSTEM_EXT/app/$APP
+  MODDIR=/system/system_ext/app/$APP
+  replace_dir
+  DIR=$SYSTEM_EXT/priv-app/$APP
+  MODDIR=/system/system_ext/priv-app/$APP
+  replace_dir
+  DIR=$VENDOR/app/$APP
+  MODDIR=/system/vendor/app/$APP
+  replace_dir
+  DIR=$VENDOR/euclid/product/app/$APP
+  MODDIR=/system/vendor/euclid/product/app/$APP
+  replace_dir
+done
 }
 
-# hide
-APPS="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
-hide_oat
-APPS="MusicFX MotoDolbyV3 MotoDolbyDax3 OPSoundTuner"
-for APP in $APPS; do
-  hide_app
-done
-
 # ui app
-if [ "`grep_prop dolby.rc1 $OPTIONALS`" == 1 ]; then
+if [ "$MOD_UI" != true ]\
+&& [ "`grep_prop dolby.rc1 $OPTIONALS`" == 1 ]; then
   ui_print "- Using RC1 app instead of RC4"
   APPS="DaxUI daxService"
   ui_print " "
@@ -820,8 +825,14 @@ else
 fi
 for APP in $APPS; do
   rm -rf `find $MODPATH/system -type d -name $APP`
-  hide_app
 done
+hide_app
+
+# hide
+APPS="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
+hide_oat
+APPS="MusicFX MotoDolbyV3 MotoDolbyDax3 OPSoundTuner"
+hide_app
 
 # stream mode
 FILE=$MODPATH/.aml.sh
@@ -832,7 +843,7 @@ if echo "$PROP" | grep -q m; then
   sed -i 's|musicstream=|musicstream=true|g' $MODPATH/acdb.conf
   ui_print " "
 else
-  APP=AudioFX
+  APPS=AudioFX
   hide_app
 fi
 if echo "$PROP" | grep -q r; then
