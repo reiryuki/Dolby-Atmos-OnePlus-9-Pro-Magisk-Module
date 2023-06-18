@@ -1,6 +1,17 @@
 # space
 ui_print " "
 
+# log
+if [ "$BOOTMODE" != true ]; then
+  FILE=/sdcard/$MODID\_recovery.log
+  ui_print "- Log will be saved at $FILE"
+  exec 2>$FILE
+  ui_print " "
+fi
+
+# run
+. $MODPATH/function.sh
+
 # info
 MODVER=`grep_prop version $MODPATH/module.prop`
 MODVERCODE=`grep_prop versionCode $MODPATH/module.prop`
@@ -11,146 +22,12 @@ if [ "$KSU" == true ]; then
   ui_print " KSUVersion=$KSU_VER"
   ui_print " KSUVersionCode=$KSU_VER_CODE"
   ui_print " KSUKernelVersionCode=$KSU_KERNEL_VER_CODE"
+  sed -i 's|#k||g' $MODPATH/post-fs-data.sh
 else
   ui_print " MagiskVersion=$MAGISK_VER"
   ui_print " MagiskVersionCode=$MAGISK_VER_CODE"
 fi
 ui_print " "
-
-# huskydg function
-get_device() {
-PAR="$1"
-DEV="`cat /proc/self/mountinfo | awk '{ if ( $5 == "'$PAR'" ) print $3 }' | head -1 | sed 's/:/ /g'`"
-}
-mount_mirror() {
-SRC="$1"
-DES="$2"
-RAN="`head -c6 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9'`"
-while [ -e /dev/$RAN ]; do
-  RAN="`head -c6 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9'`"
-done
-mknod /dev/$RAN b `get_device "$SRC"; echo $DEV`
-if mount -t ext4 -o ro /dev/$RAN "$DES"\
-|| mount -t erofs -o ro /dev/$RAN "$DES"\
-|| mount -t f2fs -o ro /dev/$RAN "$DES"\
-|| mount -t ubifs -o ro /dev/$RAN "$DES"; then
-  blockdev --setrw /dev/$RAN
-  rm -f /dev/$RAN
-  return 0
-fi
-rm -f /dev/$RAN
-return 1
-}
-unmount_mirror() {
-DIRS="$MIRROR/system_root $MIRROR/system $MIRROR/vendor
-      $MIRROR/product $MIRROR/system_ext $MIRROR/odm
-      $MIRROR/my_product $MIRROR"
-for DIR in $DIRS; do
-  umount $DIR
-done
-}
-mount_odm_to_mirror() {
-DIR=/odm
-if [ -d $DIR ]; then
-  ui_print "- Mount $MIRROR$DIR..."
-  mkdir -p $MIRROR$DIR
-  if mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  $MIRROR$DIR mount success"
-  else
-    ui_print "  ! $MIRROR$DIR mount failed"
-    rm -rf $MIRROR$DIR
-    if [ -d $MIRROR/system_root$DIR ]; then
-      ln -sf $MIRROR/system_root$DIR $MIRROR
-    fi
-  fi
-  ui_print " "
-fi
-}
-mount_my_product_to_mirror() {
-DIR=/my_product
-if [ -d $DIR ]; then
-  ui_print "- Mount $MIRROR$DIR..."
-  mkdir -p $MIRROR$DIR
-  if mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  $MIRROR$DIR mount success"
-  else
-    ui_print "  ! $MIRROR$DIR mount failed"
-    rm -rf $MIRROR$DIR
-    if [ -d $MIRROR/system_root$DIR ]; then
-      ln -sf $MIRROR/system_root$DIR $MIRROR
-    fi
-  fi
-  ui_print " "
-fi
-}
-mount_partitions_to_mirror() {
-unmount_mirror
-# mount system
-if [ "$SYSTEM_ROOT" == true ]; then
-  DIR=/system_root
-  ui_print "- Mount $MIRROR$DIR..."
-  mkdir -p $MIRROR$DIR
-  if mount_mirror / $MIRROR$DIR; then
-    ui_print "  $MIRROR$DIR mount success"
-    rm -rf $MIRROR/system
-    ln -sf $MIRROR$DIR/system $MIRROR
-  else
-    ui_print "  ! $MIRROR$DIR mount failed"
-    rm -rf $MIRROR$DIR
-  fi
-else
-  DIR=/system
-  ui_print "- Mount $MIRROR$DIR..."
-  mkdir -p $MIRROR$DIR
-  if mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  $MIRROR$DIR mount success"
-  else
-    ui_print "  ! $MIRROR$DIR mount failed"
-    rm -rf $MIRROR$DIR
-  fi
-fi
-ui_print " "
-# mount vendor
-DIR=/vendor
-ui_print "- Mount $MIRROR$DIR..."
-mkdir -p $MIRROR$DIR
-if mount_mirror $DIR $MIRROR$DIR; then
-  ui_print "  $MIRROR$DIR mount success"
-else
-  ui_print "  ! $MIRROR$DIR mount failed"
-  rm -rf $MIRROR$DIR
-  ln -sf $MIRROR/system$DIR $MIRROR
-fi
-ui_print " "
-# mount product
-DIR=/product
-ui_print "- Mount $MIRROR$DIR..."
-mkdir -p $MIRROR$DIR
-if mount_mirror $DIR $MIRROR$DIR; then
-  ui_print "  $MIRROR$DIR mount success"
-else
-  ui_print "  ! $MIRROR$DIR mount failed"
-  rm -rf $MIRROR$DIR
-  ln -sf $MIRROR/system$DIR $MIRROR
-fi
-ui_print " "
-# mount system_ext
-DIR=/system_ext
-ui_print "- Mount $MIRROR$DIR..."
-mkdir -p $MIRROR$DIR
-if mount_mirror $DIR $MIRROR$DIR; then
-  ui_print "  $MIRROR$DIR mount success"
-else
-  ui_print "  ! $MIRROR$DIR mount failed"
-  rm -rf $MIRROR$DIR
-  if [ -d $MIRROR/system$DIR ]; then
-    ln -sf $MIRROR/system$DIR $MIRROR
-  fi
-fi
-ui_print " "
-mount_odm_to_mirror
-mount_my_product_to_mirror
-}
 
 # bit
 if [ "`grep_prop dolby.32bit $OPTIONALS`" == 1 ]; then
@@ -178,20 +55,11 @@ else
   ui_print " "
 fi
 
+# recovery
+mount_partitions_in_recovery
+
 # magisk
-MAGISKPATH=`magisk --path`
-if [ "$BOOTMODE" == true ]; then
-  if [ "$MAGISKPATH" ]; then
-    mount -o rw,remount $MAGISKPATH
-    MAGISKTMP=$MAGISKPATH/.magisk
-    MIRROR=$MAGISKTMP/mirror
-  else
-    MAGISKTMP=/mnt
-    mount -o rw,remount $MAGISKTMP
-    MIRROR=$MAGISKTMP/mirror
-    mount_partitions_to_mirror
-  fi
-fi
+magisk_setup
 
 # path
 SYSTEM=`realpath $MIRROR/system`
@@ -213,17 +81,6 @@ MY_PRODUCT=`realpath $MIRROR/my_product`
 OPTIONALS=/sdcard/optionals.prop
 if [ ! -f $OPTIONALS ]; then
   touch $OPTIONALS
-fi
-
-# mount
-if [ "$BOOTMODE" != true ]; then
-  if [ -e /dev/block/bootdevice/by-name/vendor ]; then
-    mount -o rw -t auto /dev/block/bootdevice/by-name/vendor /vendor
-  else
-    mount -o rw -t auto /dev/block/bootdevice/by-name/cust /vendor
-  fi
-  mount -o rw -t auto /dev/block/bootdevice/by-name/persist /persist
-  mount -o rw -t auto /dev/block/bootdevice/by-name/metadata /metadata
 fi
 
 # check
@@ -294,9 +151,9 @@ if [ "$MOD_UI" != true ] && [ "$PROP" ]\
 && [ "$PROP" -gt 192 ]; then
   ui_print "- Using max/min limit 36 dB"
   cp -rf $MODPATH/system_36dB/* $MODPATH/system
+  ui_print " "
 fi
 rm -rf $MODPATH/system_36dB
-ui_print " "
 
 # cleaning
 ui_print "- Cleaning..."
@@ -308,11 +165,7 @@ if [ "$BOOTMODE" == true ]; then
 fi
 rm -f /data/vendor/dolby/dap_sqlite3.db
 rm -rf $MODPATH/unused
-rm -rf /metadata/magisk/$MODID
-rm -rf /mnt/vendor/persist/magisk/$MODID
-rm -rf /persist/magisk/$MODID
-rm -rf /data/unencrypted/magisk/$MODID
-rm -rf /cache/magisk/$MODID
+remove_sepolicy_rule
 ui_print " "
 
 # function
@@ -336,6 +189,7 @@ for NAME in $NAMES; do
   rm -rf /persist/magisk/$NAME
   rm -rf /data/unencrypted/magisk/$NAME
   rm -rf /cache/magisk/$NAME
+  rm -rf /cust/magisk/$NAME
 done
 }
 
@@ -381,68 +235,28 @@ fi
 
 # function
 permissive_2() {
-sed -i '1i\
-SELINUX=`getenforce`\
-if [ "$SELINUX" == Enforcing ]; then\
-  magiskpolicy --live "permissive *"\
-fi\' $MODPATH/post-fs-data.sh
+sed -i 's|#2||g' $MODPATH/post-fs-data.sh
 }
 permissive() {
-SELINUX=`getenforce`
-if [ "$SELINUX" == Enforcing ]; then
-  setenforce 0
-  SELINUX=`getenforce`
-  if [ "$SELINUX" == Enforcing ]; then
+FILE=/sys/fs/selinux/enforce
+SELINUX=`cat $FILE`
+if [ "$SELINUX" == 1 ]; then
+  if ! setenforce 0; then
+    echo 0 > $FILE
+  fi
+  SELINUX=`cat $FILE`
+  if [ "$SELINUX" == 1 ]; then
     ui_print "  Your device can't be turned to Permissive state."
     ui_print "  Using Magisk Permissive mode instead."
     permissive_2
   else
-    setenforce 1
-    sed -i '1i\
-SELINUX=`getenforce`\
-if [ "$SELINUX" == Enforcing ]; then\
-  setenforce 0\
-fi\' $MODPATH/post-fs-data.sh
+    if ! setenforce 1; then
+      echo 1 > $FILE
+    fi
+    sed -i 's|#1||g' $MODPATH/post-fs-data.sh
   fi
-fi
-}
-set_read_write() {
-for NAME in $NAMES; do
-  if [ -e $DIR$NAME ]; then
-    blockdev --setrw $DIR$NAME
-  fi
-done
-}
-remount_rw() {
-DIR=/dev/block/bootdevice/by-name
-NAMES="/vendor$SLOT /cust$SLOT /system$SLOT /system_ext$SLOT"
-set_read_write
-DIR=/dev/block/mapper
-set_read_write
-DIR=$MAGISKTMP/block
-NAMES="/vendor /system_root /system /system_ext"
-set_read_write
-mount -o rw,remount $MAGISKTMP/mirror/system
-mount -o rw,remount $MAGISKTMP/mirror/system_root
-mount -o rw,remount $MAGISKTMP/mirror/system_ext
-mount -o rw,remount $MAGISKTMP/mirror/vendor
-mount -o rw,remount /system
-mount -o rw,remount /
-mount -o rw,remount /system_root
-mount -o rw,remount /system_ext
-mount -o rw,remount /vendor
-}
-remount_ro() {
-if [ "$BOOTMODE" == true ]; then
-  mount -o ro,remount $MAGISKTMP/mirror/system
-  mount -o ro,remount $MAGISKTMP/mirror/system_root
-  mount -o ro,remount $MAGISKTMP/mirror/system_ext
-  mount -o ro,remount $MAGISKTMP/mirror/vendor
-  mount -o ro,remount /system
-  mount -o ro,remount /
-  mount -o ro,remount /system_root
-  mount -o ro,remount /system_ext
-  mount -o ro,remount /vendor
+else
+  sed -i 's|#1||g' $MODPATH/post-fs-data.sh
 fi
 }
 backup() {
@@ -499,16 +313,6 @@ vendor.dolby.hardware.dms::IDms u:object_r:hal_dms_hwservice:s0' $FILE
   fi
 fi
 }
-restore() {
-for FILE in $FILES; do
-  if [ -f $FILE.orig ]; then
-    mv -f $FILE.orig $FILE
-  fi
-  if [ -f $FILE.bak ]; then
-    mv -f $FILE.bak $FILE
-  fi
-done
-}
 early_init_mount_dir() {
 if echo $MAGISK_VER | grep -q delta\
 && [ "`grep_prop dolby.skip.early $OPTIONALS`" != 1 ]; then
@@ -520,7 +324,7 @@ if echo $MAGISK_VER | grep -q delta\
   elif ! $ISENCRYPTED; then
     EIMDIR=/data/adb/early-mount.d
   elif [ -d /data/unencrypted ]\
-  && ! grep ' /data ' /proc/mounts | grep -qE 'dm-|f2fs'; then
+  && ! grep ' /data ' /proc/mounts | grep -Eq 'dm-|f2fs'; then
     EIMDIR=/data/unencrypted/early-mount.d
   elif grep ' /cache ' /proc/mounts | grep -q 'ext4'; then
     EIMDIR=/cache/early-mount.d
@@ -530,6 +334,8 @@ if echo $MAGISK_VER | grep -q delta\
     EIMDIR=/persist/early-mount.d
   elif grep ' /mnt/vendor/persist ' /proc/mounts | grep -q 'ext4'; then
     EIMDIR=/mnt/vendor/persist/early-mount.d
+  elif grep ' /cust ' /proc/mounts | grep -Eq 'ext4|f2fs'; then
+    EIMDIR=/cust/early-mount.d
   else
     EIM=false
     ui_print "- Unable to find early init mount directory"
@@ -558,7 +364,7 @@ for NAME in $NAMES; do
     if [ ! "$FILE" ]; then
       if [ "`grep_prop install.hwlib $OPTIONALS`" == 1 ]; then
         ui_print "- Installing $NAME 64 directly to"
-        ui_print "  $SYSTEM/lib64..."
+        ui_print "$SYSTEM/lib64..."
         cp $MODPATH/system_support/lib64/$NAME $SYSTEM/lib64
         DES=$SYSTEM/lib64/$NAME
         if [ -f $MODPATH/system_support/lib64/$NAME ]\
@@ -585,7 +391,7 @@ for NAME in $NAMES; do
   if [ ! "$FILE" ]; then
     if [ "`grep_prop install.hwlib $OPTIONALS`" == 1 ]; then
       ui_print "- Installing $NAME directly to"
-      ui_print "  $SYSTEM/lib..."
+      ui_print "$SYSTEM/lib..."
       cp $MODPATH/system_support/lib/$NAME $SYSTEM/lib
       DES=$SYSTEM/lib/$NAME
       if [ -f $MODPATH/system_support/lib/$NAME ]\
@@ -723,8 +529,8 @@ if ! grep -A2 vendor.dolby.hardware.dms $FILE | grep -q 1.0; then
     ui_print " "
   fi
   FILES="$MAGISKTMP/mirror/*/etc/vintf/manifest.xml
-        $MAGISKTMP/mirror/*/*/etc/vintf/manifest.xml
-        /*/etc/vintf/manifest.xml /*/*/etc/vintf/manifest.xml"
+         $MAGISKTMP/mirror/*/*/etc/vintf/manifest.xml
+         /*/etc/vintf/manifest.xml /*/*/etc/vintf/manifest.xml"
   restore
 fi
 
@@ -755,9 +561,9 @@ if ! grep -Eq 'u:object_r:hal_dms_hwservice:s0|u:object_r:default_android_hwserv
     ui_print " "
   fi
   FILES="$MAGISKTMP/mirror/*/etc/selinux/*_hwservice_contexts
-        $MAGISKTMP/mirror/*/*/etc/selinux/*_hwservice_contexts
-        /*/etc/selinux/*_hwservice_contexts
-        /*/*/etc/selinux/*_hwservice_contexts"
+         $MAGISKTMP/mirror/*/*/etc/selinux/*_hwservice_contexts
+         /*/etc/selinux/*_hwservice_contexts
+         /*/*/etc/selinux/*_hwservice_contexts"
   restore
 fi
 
@@ -869,6 +675,51 @@ fi
 if echo "$PROP" | grep -q n; then
   ui_print "- Activating notification stream..."
   sed -i 's|#n||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q b; then
+  ui_print "- Activating bluetooth_sco stream..."
+  sed -i 's|#b||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q f; then
+  ui_print "- Activating dtmf stream..."
+  sed -i 's|#f||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q e; then
+  ui_print "- Activating enforced_audible stream..."
+  sed -i 's|#e||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q y; then
+  ui_print "- Activating accessibility stream..."
+  sed -i 's|#y||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q t; then
+  ui_print "- Activating tts stream..."
+  sed -i 's|#t||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q i; then
+  ui_print "- Activating assistant stream..."
+  sed -i 's|#i||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q c; then
+  ui_print "- Activating call_assistant stream..."
+  sed -i 's|#c||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q p; then
+  ui_print "- Activating patch stream..."
+  sed -i 's|#p||g' $FILE
+  ui_print " "
+fi
+if echo "$PROP" | grep -q g; then
+  ui_print "- Activating rerouting stream..."
+  sed -i 's|#g||g' $FILE
   ui_print " "
 fi
 
@@ -990,7 +841,7 @@ if [ "`grep_prop fix.vendor_overlay $OPTIONALS`" == 1 ]\
 fi
 
 # uninstaller
-NAME=DolbyUninstaller.zip
+NAME=DolbyModuleUninstaller.zip
 cp -f $MODPATH/$NAME /sdcard
 rm -f $MODPATH/$NAME
 ui_print "- Flash /sdcard/$NAME"
