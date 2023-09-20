@@ -61,7 +61,7 @@ if [ -d $DIR ]; then
   ui_print "- Mount $MIRROR$DIR..."
   mkdir -p $MIRROR$DIR
   if ! mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  ! Failed"
+    ui_print "  Creating symlink instead"
     rm -rf $MIRROR$DIR
     ln -sf $MIRROR/system$DIR $MIRROR
   fi
@@ -74,7 +74,7 @@ if [ -d $DIR ]; then
   ui_print "- Mount $MIRROR$DIR..."
   mkdir -p $MIRROR$DIR
   if ! mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  ! Failed"
+    ui_print "  Creating symlink instead"
     rm -rf $MIRROR$DIR
     ln -sf $MIRROR/system$DIR $MIRROR
   fi
@@ -87,7 +87,7 @@ if [ -d $DIR ]; then
   ui_print "- Mount $MIRROR$DIR..."
   mkdir -p $MIRROR$DIR
   if ! mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  ! Failed"
+    ui_print "  Creating symlink instead"
     rm -rf $MIRROR$DIR
     if [ -d $MIRROR/system$DIR ]; then
       ln -sf $MIRROR/system$DIR $MIRROR
@@ -102,10 +102,14 @@ if [ -d $DIR ]; then
   ui_print "- Mount $MIRROR$DIR..."
   mkdir -p $MIRROR$DIR
   if ! mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  ! Failed"
+    ui_print "  Creating symlink instead"
     rm -rf $MIRROR$DIR
     if [ -d $MIRROR/system_root$DIR ]; then
       ln -sf $MIRROR/system_root$DIR $MIRROR
+    elif [ -d $MIRROR/vendor$DIR ]; then
+      ln -sf $MIRROR/vendor$DIR $MIRROR
+    elif [ -d $MIRROR/system/vendor$DIR ]; then
+      ln -sf $MIRROR/system/vendor$DIR $MIRROR
     fi
   fi
   ui_print " "
@@ -117,7 +121,7 @@ if [ -d $DIR ]; then
   ui_print "- Mount $MIRROR$DIR..."
   mkdir -p $MIRROR$DIR
   if ! mount_mirror $DIR $MIRROR$DIR; then
-    ui_print "  ! Failed"
+    ui_print "  Creating symlink instead"
     rm -rf $MIRROR$DIR
     if [ -d $MIRROR/system_root$DIR ]; then
       ln -sf $MIRROR/system_root$DIR $MIRROR
@@ -171,12 +175,12 @@ if [ "$BOOTMODE" == true ]; then
 fi
 }
 remove_sepolicy_rule() {
-rm -rf /metadata/magisk/"$MODID"
-rm -rf /mnt/vendor/persist/magisk/"$MODID"
-rm -rf /persist/magisk/"$MODID"
-rm -rf /data/unencrypted/magisk/"$MODID"
-rm -rf /cache/magisk/"$MODID"
-rm -rf /cust/magisk/"$MODID"
+rm -rf /metadata/magisk/"$MODID"\
+ /mnt/vendor/persist/magisk/"$MODID"\
+ /persist/magisk/"$MODID"\
+ /data/unencrypted/magisk/"$MODID"\
+ /cache/magisk/"$MODID"\
+ /cust/magisk/"$MODID"
 }
 set_read_write() {
 for NAME in $NAMES; do
@@ -187,7 +191,7 @@ done
 }
 remount_rw() {
 DIR=/dev/block/bootdevice/by-name
-NAMES="/vendor$SLOT /cust$SLOT /system$SLOT /system_ext$SLOT"
+NAMES="/vendor$SLOT /cust /system$SLOT /system_ext$SLOT"
 set_read_write
 DIR=/dev/block/mapper
 set_read_write
