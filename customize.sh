@@ -452,6 +452,7 @@ if [ "$LIST32BIT" ]; then
   DIR=/lib
   run_find_file
 fi
+}
 patch_manifest_eim() {
 if [ $EIM == true ]; then
   SRC=$SYSTEM/etc/vintf/manifest.xml
