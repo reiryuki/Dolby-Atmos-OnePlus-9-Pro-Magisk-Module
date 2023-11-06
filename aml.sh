@@ -1,16 +1,17 @@
-[ -z $MODPATH ] && MODPATH=${0%/*}
+[ ! "$MODPATH" ] && MODPATH=${0%/*}
 
 # destination
+[ ! "$libdir" ] && libdir=/vendor
 MODAEC=`find $MODPATH -type f -name *audio*effects*.conf`
 MODAEX=`find $MODPATH -type f -name *audio*effects*.xml`
 MODAP=`find $MODPATH -type f -name *policy*.conf -o -name *policy*.xml`
 
 # function
-libpath() {
-if [ -f /vendor/lib/soundfx/$LIB ]; then
-  LIBPATH="\/vendor\/lib\/soundfx"
+archdir() {
+if [ -f $libdir/lib/soundfx/$LIB ]; then
+  ARCHDIR=/lib
 else
-  LIBPATH="\/vendor\/lib64\/soundfx"
+  ARCHDIR=/lib64
 fi
 }
 remove_conf() {
@@ -254,12 +255,12 @@ LIBNAME=dolbyatmos
 NAME=dolbyatmos
 UUID=74697567-7261-6564-6864-65726f206678
 RMVS="$LIB $LIBNAME $NAME $UUID"
-libpath
+archdir
 
 # patch audio effects conf
 if [ "$MODAEC" ]; then
   remove_conf
-  sed -i "/^libraries {/a\  $LIBNAME {\n    path $LIBPATH\/$LIB\n  }" $MODAEC
+  sed -i "/^libraries {/a\  $LIBNAME {\n    path \\$libdir\\$ARCHDIR\/soundfx\/$LIB\n  }" $MODAEC
   sed -i "/^effects {/a\  $NAME {\n    library $LIBNAME\n    uuid $UUID\n  }" $MODAEC
 #m  sed -i "/^    music {/a\        $NAME {\n        }" $MODAEC
 #r  sed -i "/^    ring {/a\        $NAME {\n        }" $MODAEC
