@@ -184,6 +184,14 @@ if ! grep -A2 vendor.dolby.hardware.dms $FILE | grep 1.0; then
   fi
 fi
 
+# cleaning
+FILE=$MODPATH/cleaner.sh
+if [ -f $FILE ]; then
+  . $FILE
+  mv -f $FILE $FILE\.txt
+fi
+
+
 
 
 
