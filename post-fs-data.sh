@@ -89,13 +89,6 @@ chmod 0770 $DIR
 chown 1013.1013 $DIR
 chcon u:object_r:vendor_data_file:s0 $DIR
 
-# cleaning
-FILE=$MODPATH/cleaner.sh
-if [ -f $FILE ]; then
-  . $FILE
-  rm -f $FILE
-fi
-
 # permission
 DIRS=`find $MODPATH/vendor\
            $MODPATH/system/vendor -type d`
