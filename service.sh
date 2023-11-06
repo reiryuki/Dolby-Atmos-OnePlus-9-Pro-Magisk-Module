@@ -1,7 +1,8 @@
 MODPATH=${0%/*}
 
 # log
-exec 2>$MODPATH/debug.log
+LOGFILE=$MODPATH/debug.log
+exec 2>$LOGFILE
 set -x
 
 # var
@@ -21,7 +22,7 @@ else
 fi
 PID=`pidof $SERVER`
 if [ "$PID" ]; then
-  killall $SERVER
+  killall $SERVER android.hardware.audio@4.0-service-mediatek
 fi
 
 # stop
@@ -54,7 +55,8 @@ killall vendor.qti.hardware.vibrator.service\
  android.hardware.sensors@1.0-service\
  android.hardware.sensors@2.0-service\
  android.hardware.sensors@2.0-service-mediatek\
- android.hardware.sensors@2.0-service.multihal
+ android.hardware.sensors@2.0-service.multihal\
+ android.hardware.health-service.qti
 
 # wait
 sleep 20
@@ -109,7 +111,7 @@ done
 
 # allow
 PKG=com.dolby.daxappui
-if pm list packages | grep $PKG ; then
+if appops get $PKG > /dev/null 2>&1; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
   fi
@@ -122,7 +124,7 @@ fi
 
 # allow
 PKG=com.dolby.daxservice
-if pm list packages | grep $PKG ; then
+if appops get $PKG > /dev/null 2>&1; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
   fi
@@ -135,7 +137,7 @@ fi
 
 # allow
 PKG=com.dolby.atmos
-if pm list packages | grep $PKG ; then
+if appops get $PKG > /dev/null 2>&1; then
   if [ "$API" -ge 30 ]; then
     appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
   fi
@@ -148,10 +150,10 @@ fi
 
 # function
 stop_log() {
-FILE=$MODPATH/debug.log
-SIZE=`du $FILE | sed "s|$FILE||g"`
+SIZE=`du $LOGFILE | sed "s|$LOGFILE||g"`
 if [ "$LOG" != stopped ] && [ "$SIZE" -gt 50 ]; then
   exec 2>/dev/null
+  set +x
   LOG=stopped
 fi
 }
@@ -165,15 +167,11 @@ sleep 15
 stop_log
 NEXTPID=`pidof $SERVER`
 if [ "`getprop init.svc.$SERVER`" != stopped ]; then
-  until [ "$PID" != "$NEXTPID" ]; do
-    check_audioserver
-  done
-  killall $PROC
-  check_audioserver
+  [ "$PID" != "$NEXTPID" ] && killall $PROC
 else
   start $SERVER
-  check_audioserver
 fi
+check_audioserver
 }
 
 # check
