@@ -118,9 +118,10 @@ FILE=/bin/hw/vendor.dolby.media.c2@1.0-service
 if [ -f /system$FILE ] || [ -f /vendor$FILE ]\
 || [ -f /odm$FILE ] || [ -f /system_ext$FILE ]\
 || [ -f /product$FILE ]; then
-  ui_print "! This module is conflicting with your"
+  ui_print "! This module maybe conflicting with your"
   ui_print "  $FILE"
-  abort
+  ui_print "  causes your internal storage mount failed"
+  ui_print " "
 fi
 
 # function
@@ -239,13 +240,18 @@ done
 NAMES="dolbyatmos DolbyAudio MotoDolby"
 conflict
 NAMES=SoundEnhancement
-FILE=/data/adb/modules/$NAME/module.prop
+FILE=/data/adb/modules/$NAMES/module.prop
 if grep -q 'Dolby Atmos Xperia' $FILE; then
   conflict
 fi
 NAMES=MiSound
-FILE=/data/adb/modules/$NAME/module.prop
+FILE=/data/adb/modules/$NAMES/module.prop
 if grep -q 'and Dolby Atmos' $FILE; then
+  conflict
+fi
+NAMES=DolbyAtmosSpatialSound
+FILE=/data/adb/modules/$NAMES/module.prop
+if grep -q 'Dolby Atmos and' $FILE; then
   conflict
 fi
 
@@ -306,15 +312,21 @@ fi
 backup() {
 if [ ! -f $FILE.orig ] && [ ! -f $FILE.bak ]; then
   cp -af $FILE $FILE.orig
+  if [ -f $FILE.orig ]; then
+    ui_print "- Created"
+    ui_print "$FILE.orig"
+  else
+    ui_print "- Failed to create"
+    ui_print "$FILE.orig"
+    ui_print "  Probably Read-Only or no space left"
+  fi
+  ui_print " "
 fi
 }
 patch_manifest() {
 if [ -f $FILE ]; then
   backup
   if [ -f $FILE.orig ] || [ -f $FILE.bak ]; then
-    ui_print "- Created"
-    ui_print "$FILE.orig"
-    ui_print " "
     ui_print "- Patching"
     ui_print "$FILE"
     ui_print "  directly..."
@@ -322,17 +334,8 @@ if [ -f $FILE ]; then
     <hal format="hidl">\
         <name>vendor.dolby.hardware.dms</name>\
         <transport>hwbinder</transport>\
-        <version>1.0</version>\
-        <interface>\
-            <name>IDms</name>\
-            <instance>default</instance>\
-        </interface>\
         <fqname>@1.0::IDms/default</fqname>\
     </hal>' $FILE
-    ui_print " "
-  else
-    ui_print "- Failed to create"
-    ui_print "$FILE.orig"
     ui_print " "
   fi
 fi
@@ -341,18 +344,11 @@ patch_hwservice() {
 if [ -f $FILE ]; then
   backup
   if [ -f $FILE.orig ] || [ -f $FILE.bak ]; then
-    ui_print "- Created"
-    ui_print "$FILE.orig"
-    ui_print " "
     ui_print "- Patching"
     ui_print "$FILE"
     ui_print "  directly..."
     sed -i '1i\
 vendor.dolby.hardware.dms::IDms u:object_r:hal_dms_hwservice:s0' $FILE
-    ui_print " "
-  else
-    ui_print "- Failed to create"
-    ui_print "$FILE.orig"
     ui_print " "
   fi
 fi
@@ -486,11 +482,6 @@ if [ $EIM == true ]; then
     <hal format="hidl">\
         <name>vendor.dolby.hardware.dms</name>\
         <transport>hwbinder</transport>\
-        <version>1.0</version>\
-        <interface>\
-            <name>IDms</name>\
-            <instance>default</instance>\
-        </interface>\
         <fqname>@1.0::IDms/default</fqname>\
     </hal>' $DES
       ui_print " "
@@ -838,12 +829,32 @@ if [ "`grep_prop dolby.deepbass $OPTIONALS`" == 1 ]; then
 fi
 ui_print " "
 
+# mod
+if [ "`grep_prop dolby.mod $OPTIONALS`" != 0 ]; then
+  NAME=libdlbdsservice.so
+  NAME2=libdapdsservice.so
+  if [ "$IS64BIT" == true ]; then
+    FILE=$MODPATH/system/vendor/lib64/$NAME
+    MODFILE=$MODPATH/system/vendor/lib64/$NAME2
+    rename_file
+  else
+    FILE=$MODPATH/system/vendor/lib/$NAME
+    MODFILE=$MODPATH/system/vendor/lib/$NAME2
+    rename_file
+  fi
+  FILE="$MODPATH/system/vendor/lib*/$NAME2
+$MODPATH/system/vendor/lib*/vendor.dolby.hardware.dms@*-impl.so
+$MODPATH/system/vendor/bin/hw/vendor.dolby.hardware.dms@*-service"
+  change_name
+fi
+
 # audio rotation
 FILE=$MODPATH/service.sh
 if [ "`grep_prop audio.rotation $OPTIONALS`" == 1 ]; then
   ui_print "- Enables ro.audio.monitorRotation=true"
   sed -i '1i\
-resetprop ro.audio.monitorRotation true' $FILE
+resetprop ro.audio.monitorRotation true\
+resetprop ro.audio.monitorWindowRotation true' $FILE
   ui_print " "
 fi
 
@@ -872,12 +883,12 @@ done
 # check
 if "$IS64BIT"; then
   FILES=/lib64/libstagefrightdolby.so
-  file_check_vendor
+#  file_check_vendor
 fi
 if [ "$LIST32BIT" ]; then
   FILES="/lib/libstagefrightdolby.so
          /lib/libstagefright_soft_ddpdec.so"
-  file_check_vendor
+#  file_check_vendor
 fi
 
 # vendor_overlay

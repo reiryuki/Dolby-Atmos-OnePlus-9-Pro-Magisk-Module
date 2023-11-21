@@ -19,7 +19,6 @@
 ## Requirements
 - Android 9 and up
 - Magisk or KernelSU installed (Recommended to use Magisk Delta for systemless early init mount manifest.xml if your ROM is Read-Only https://t.me/androidryukimodsdiscussions/100091)
-- ROM doesn't use vendor.dolby.media.c2@1.0-service
 
 ## WARNING!!!
 - Possibility of bootloop or even softbrick or a service failure on Read-Only ROM if you don't use Magisk Delta.
