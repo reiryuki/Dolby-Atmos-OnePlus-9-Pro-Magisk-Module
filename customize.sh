@@ -354,14 +354,14 @@ vendor.dolby.hardware.dms::IDms u:object_r:hal_dms_hwservice:s0' $FILE
 fi
 }
 early_init_mount_dir() {
-if echo $MAGISK_VER | grep -q delta\
+if echo $MAGISK_VER | grep -Eq 'delta|Delta|kitsune'\
 && [ "`grep_prop dolby.skip.early $OPTIONALS`" != 1 ]; then
   EIM=true
-  if "$BOOTMODE"\
+  if [ "$BOOTMODE" == true ]\
   && [ -L $MIRROR/early-mount ]; then
     EIMDIR=`readlink $MIRROR/early-mount`
     [ "${EIMDIR:0:1}" != "/" ] && EIMDIR="$MIRROR/$EIMDIR"
-  elif "$BOOTMODE"\
+  elif [ "$BOOTMODE" == true ]\
   && [ "$MAGISK_VER_CODE" -ge 26000 ]\
   && [ -d $MAGISKTMP/preinit ]; then
     MOUNT=`mount | grep $MAGISKTMP/preinit`
@@ -568,7 +568,7 @@ if ! grep -A2 vendor.dolby.hardware.dms $FILE | grep -q 1.0; then
     ui_print "- Using systemless manifest.xml patch."
     ui_print "  On some ROMs, it causes bugs or even makes bootloop"
     ui_print "  because not allowed to restart hwservicemanager."
-    ui_print "  You can fix this by using Magisk Delta."
+    ui_print "  You can fix this by using Magisk Delta/Kitsune Mask."
     ui_print " "
   fi
   FILES="$MAGISKTMP/mirror/*/etc/vintf/manifest.xml
@@ -843,8 +843,8 @@ if [ "`grep_prop dolby.mod $OPTIONALS`" != 0 ]; then
     rename_file
   fi
   FILE="$MODPATH/system/vendor/lib*/$NAME2
-$MODPATH/system/vendor/lib*/vendor.dolby.hardware.dms@*-impl.so
-$MODPATH/system/vendor/bin/hw/vendor.dolby.hardware.dms@*-service"
+$MODPATH/system/vendor/lib*/vendor.dolby*.hardware.dms*@*-impl.so
+$MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service"
   change_name
 fi
 
@@ -881,7 +881,7 @@ done
 }
 
 # check
-if "$IS64BIT"; then
+if [ "$IS64BIT" == true ]; then
   FILES=/lib64/libstagefrightdolby.so
 #  file_check_vendor
 fi

@@ -1,7 +1,7 @@
 id=DolbyAtmos
 name=Dolby Atmos ZTE A2019 Pro
-version=v7.19
-versionCode=79
+version=v8.0
+versionCode=80
 author=Rei Ryuki the Fixer
 description=An EQ global type soundfx ported from ZTE A2019 Pro (P845A02) for any Android 9 and up.
 
