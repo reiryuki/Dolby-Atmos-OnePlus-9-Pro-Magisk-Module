@@ -8,7 +8,9 @@ MODAP=`find $MODPATH -type f -name *policy*.conf -o -name *policy*.xml`
 
 # function
 archdir() {
-if [ -f $libdir/lib/soundfx/$LIB ]; then
+if [ -f $libdir/lib/soundfx/$LIB ]\
+|| [ -f $MODPATH/system$libdir/lib/soundfx/$LIB ]\
+|| [ -f $MODPATH$libdir/lib/soundfx/$LIB ]; then
   ARCHDIR=/lib
 else
   ARCHDIR=/lib64
@@ -250,18 +252,30 @@ if [ "$MODAEX" ]; then
 fi
 
 # store
-LIB=libatmos.so
-LIBNAME=dolbyatmos
-NAME=dolbyatmos
-UUID=74697567-7261-6564-6864-65726f206678
-RMVS="$LIB $LIBNAME $NAME $UUID"
+LIB=libswdap_v3_6.so
+LIBHW=libhwdap_v3_6.so
+LIBNAME=dap_sw
+LIBNAME=dap_v3_6_sw
+LIBNAMEHW=dap_hw
+LIBNAMEHW=dap_v3_6_hw
+NAME=dap
+NAME=dap_v3_6_mod
+UUID=6ab06da4-c516-4611-8166-452799218539
+UUIDHW=a0c30891-8246-4aef-b8ad-d53e26da0253
+UUIDPROXY=9d4921da-8225-4f29-aefa-39537a04bcaa
+RMVS="$LIB $LIBHW $LIBNAME $LIBNAMEHW $NAME $UUID
+      $UUIDHW $UUIDPROXY libeffectproxy.so"
 archdir
 
 # patch audio effects conf
 if [ "$MODAEC" ]; then
   remove_conf
+  sed -i "/^libraries {/a\  proxy {\n    path \\$libdir\\$ARCHDIR\/soundfx\/libeffectproxy.so\n  }" $MODAEC
+  sed -i "/^libraries {/a\  $LIBNAMEHW {\n    path \\$libdir\\$ARCHDIR\/soundfx\/$LIBHW\n  }" $MODAEC
   sed -i "/^libraries {/a\  $LIBNAME {\n    path \\$libdir\\$ARCHDIR\/soundfx\/$LIB\n  }" $MODAEC
-  sed -i "/^effects {/a\  $NAME {\n    library $LIBNAME\n    uuid $UUID\n  }" $MODAEC
+  sed -i "/^effects {/a\  $NAME {\n    library proxy\n    uuid $UUIDPROXY\n  }" $MODAEC
+  sed -i "/^    uuid $UUIDPROXY/a\    libhw {\n      library $LIBNAMEHW\n      uuid $UUIDHW\n    }" $MODAEC
+  sed -i "/^    uuid $UUIDPROXY/a\    libsw {\n      library $LIBNAME\n      uuid $UUID\n    }" $MODAEC
 #m  sed -i "/^    music {/a\        $NAME {\n        }" $MODAEC
 #r  sed -i "/^    ring {/a\        $NAME {\n        }" $MODAEC
 #a  sed -i "/^    alarm {/a\        $NAME {\n        }" $MODAEC
@@ -282,8 +296,13 @@ fi
 # patch audio effects xml
 if [ "$MODAEX" ]; then
   remove_xml
+  sed -i "/<libraries>/a\        <library name=\"proxy\" path=\"libeffectproxy.so\"\/>" $MODAEX
+  sed -i "/<libraries>/a\        <library name=\"$LIBNAMEHW\" path=\"$LIBHW\"\/>" $MODAEX
   sed -i "/<libraries>/a\        <library name=\"$LIBNAME\" path=\"$LIB\"\/>" $MODAEX
-  sed -i "/<effects>/a\        <effect name=\"$NAME\" library=\"$LIBNAME\" uuid=\"$UUID\"\/>" $MODAEX
+  sed -i "/<effects>/a\        <\/effectProxy>" $MODAEX
+  sed -i "/<effects>/a\            <libhw library=\"$LIBNAMEHW\" uuid=\"$UUIDHW\"\/>" $MODAEX
+  sed -i "/<effects>/a\            <libsw library=\"$LIBNAME\" uuid=\"$UUID\"\/>" $MODAEX
+  sed -i "/<effects>/a\        <effectProxy name=\"$NAME\" library=\"proxy\" uuid=\"$UUIDPROXY\">" $MODAEX
 #m  sed -i "/<stream type=\"music\">/a\            <apply effect=\"$NAME\"\/>" $MODAEX
 #r  sed -i "/<stream type=\"ring\">/a\            <apply effect=\"$NAME\"\/>" $MODAEX
 #a  sed -i "/<stream type=\"alarm\">/a\            <apply effect=\"$NAME\"\/>" $MODAEX
@@ -306,9 +325,6 @@ fi
 #u  sed -i 's|RAW|NONE|g' $MODAP
 #u  sed -i 's|,raw||g' $MODAP
 #ufi
-
-
-
 
 
 

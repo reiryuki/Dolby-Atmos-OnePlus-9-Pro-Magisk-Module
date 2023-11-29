@@ -68,18 +68,6 @@ rm -f $FILE
 
 # run
 . $MODPATH/copy.sh
-
-# conflict
-AML=/data/adb/modules/aml
-ACDB=/data/adb/modules/acdb
-if [ -d $ACDB ] && [ ! -f $ACDB/disable ]; then
-  if [ ! -d $AML ] || [ -f $AML/disable ]; then
-    rm -f `find $MODPATH/system/etc $MODPATH/vendor/etc\
-     $MODPATH/system/vendor/etc -maxdepth 1 -type f -name $AUD`
-  fi
-fi
-
-# run
 . $MODPATH/.aml.sh
 
 # directory
@@ -165,14 +153,14 @@ M=/system/etc/vintf/manifest.xml
 rm -f $MODPATH$M
 FILE="/*/etc/vintf/manifest.xml /*/*/etc/vintf/manifest.xml
       /*/etc/vintf/manifest/*.xml /*/*/etc/vintf/manifest/*.xml"
-if ! grep -A2 vendor.dolby.hardware.dms $FILE | grep 1.0; then
+if ! grep -A2 vendor.dolby_v3_6.hardware.dms360 $FILE | grep 2.0; then
   cp -af $M $MODPATH$M
   if [ -f $MODPATH$M ]; then
     sed -i '/<manifest/a\
     <hal format="hidl">\
-        <name>vendor.dolby.hardware.dms</name>\
+        <name>vendor.dolby_v3_6.hardware.dms360</name>\
         <transport>hwbinder</transport>\
-        <fqname>@1.0::IDms/default</fqname>\
+        <fqname>@2.0::IDms/default</fqname>\
     </hal>' $MODPATH$M
     mount -o bind $MODPATH$M $M
     killall hwservicemanager
@@ -185,9 +173,6 @@ if [ -f $FILE ]; then
   . $FILE
   mv -f $FILE $FILE\.txt
 fi
-
-
-
 
 
 

@@ -49,9 +49,6 @@ fi
 ui_print " "
 
 # bit
-if [ "`grep_prop dolby.32bit $OPTIONALS`" == 1 ]; then
-  IS64BIT=false
-fi
 if [ "$IS64BIT" == true ]; then
   ui_print "- 64 bit architecture"
   ui_print " "
@@ -60,19 +57,18 @@ if [ "$IS64BIT" == true ]; then
     ui_print "- 32 bit library support"
   else
     ui_print "- Doesn't support 32 bit library"
-    rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
+    rm -rf $MODPATH/armeabi-v7a $MODPATH/x86\
+     $MODPATH/system*/lib $MODPATH/system*/vendor/lib
   fi
   ui_print " "
 else
   ui_print "- 32 bit architecture"
-  cp -rf $MODPATH/system_32/* $MODPATH/system
   rm -rf `find $MODPATH -type d -name *64`
   ui_print " "
 fi
-rm -rf $MODPATH/system_32
 
 # sdk
-NUM=28
+NUM=30
 if [ "$API" -lt $NUM ]; then
   ui_print "! Unsupported SDK $API. You have to upgrade your"
   ui_print "  Android version at least SDK API $NUM to use this module."
@@ -124,6 +120,50 @@ if [ -f /system$FILE ] || [ -f /vendor$FILE ]\
   ui_print " "
 fi
 
+# check
+NAME=_ZN7android23sp_report_stack_pointerEv
+if [ "$IS64BIT" == true ]; then
+  FILE=$VENDOR/lib64/hw/*audio*.so
+  ui_print "- Checking"
+  ui_print "$NAME"
+  ui_print "  function at"
+  ui_print "$FILE"
+  ui_print "  Please wait..."
+  if grep -q $NAME $FILE; then
+    FUNC64=true
+  else
+    ui_print "  Function not found."
+    FUNC64=false
+  fi
+  ui_print " "
+else
+  FUNC64=false
+fi
+if [ "$LIST32BIT" ]; then
+  FILE=$VENDOR/lib/hw/*audio*.so
+  ui_print "- Checking"
+  ui_print "$NAME"
+  ui_print "  function at"
+  ui_print "$FILE"
+  ui_print "  Please wait..."
+  if grep -q $NAME $FILE; then
+    FUNC32=true
+  else
+    ui_print "  Function not found."
+    FUNC32=false
+  fi
+  ui_print " "
+else
+  FUNC32=false
+fi
+if [ $FUNC64 == true ] && [ $FUNC32 == false ]; then
+  rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
+elif [ $FUNC64 == false ] && [ $FUNC32 == true ]; then
+  rm -rf `find $MODPATH -type d -name *64`
+elif [ $FUNC64 == false ] && [ $FUNC32 == false ]; then
+  abort
+fi
+
 # function
 run_check_function() {
 LISTS=`strings $MODPATH/system/vendor$DIR/$DES | grep ^lib | grep .so`
@@ -152,8 +192,8 @@ fi
 }
 
 # check
-NAME=_ZN7android8hardware7details17gBnConstructorMapE
-DES=vendor.dolby.hardware.dms@1.0.so
+NAME=_ZN7android8hardware23getOrCreateCachedBinderEPNS_4hidl4base4V1_05IBaseE
+DES=vendor.dolby_v3_6.hardware.dms360@2.0.so
 LIB=libhidlbase.so
 check_function
 
@@ -171,7 +211,7 @@ mv -f $MODPATH/aml.sh $MODPATH/.aml.sh
 # mod ui
 MOD_UI=false
 if [ "`grep_prop mod.ui $OPTIONALS`" == 1 ]; then
-  APP=DaxUI
+  APP=AudioEffectCenterUI
   FILE=/sdcard/$APP.apk
   DIR=`find $MODPATH/system -type d -name $APP`
   ui_print "- Using modified UI apk..."
@@ -188,16 +228,6 @@ if [ "`grep_prop mod.ui $OPTIONALS`" == 1 ]; then
   ui_print " "
 fi
 
-# 36 dB
-PROP=`grep_prop dolby.gain $OPTIONALS`
-if [ "$MOD_UI" != true ] && [ "$PROP" ]\
-&& [ "$PROP" -gt 192 ]; then
-  ui_print "- Using max/min limit 36 dB"
-  cp -rf $MODPATH/system_36dB/* $MODPATH/system
-  ui_print " "
-fi
-rm -rf $MODPATH/system_36dB
-
 # cleaning
 ui_print "- Cleaning..."
 PKGS=`cat $MODPATH/package.txt`
@@ -206,7 +236,12 @@ if [ "$BOOTMODE" == true ]; then
     RES=`pm uninstall $PKG 2>/dev/null`
   done
 fi
-rm -f /data/vendor/dolby/dap_sqlite3.db
+if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
+  rm -f /data/vendor/dolby/dax_sqlite3.db
+else
+  rm -f /data/vendor/dolby/dax_sq_v3_6.db
+  sed -i 's|dax_sqlite3.db|dax_sq_v3_6.db|g' $MODPATH/uninstall.sh
+fi
 rm -rf $MODPATH/unused
 remove_sepolicy_rule
 ui_print " "
@@ -237,11 +272,10 @@ done
 }
 
 # conflict
-NAMES="dolbyatmos DolbyAudio MotoDolby"
-conflict
-NAMES=SoundEnhancement
+NAMES=DolbyAtmos
 FILE=/data/adb/modules/$NAMES/module.prop
-if grep -q 'Dolby Atmos Xperia' $FILE; then
+if grep -q 'Moto G52' $FILE\
+|| grep -q 'OnePlus 8' $FILE; then
   conflict
 fi
 NAMES=MiSound
@@ -332,9 +366,9 @@ if [ -f $FILE ]; then
     ui_print "  directly..."
     sed -i '/<manifest/a\
     <hal format="hidl">\
-        <name>vendor.dolby.hardware.dms</name>\
+        <name>vendor.dolby_v3_6.hardware.dms360</name>\
         <transport>hwbinder</transport>\
-        <fqname>@1.0::IDms/default</fqname>\
+        <fqname>@2.0::IDms/default</fqname>\
     </hal>' $FILE
     ui_print " "
   fi
@@ -348,7 +382,7 @@ if [ -f $FILE ]; then
     ui_print "$FILE"
     ui_print "  directly..."
     sed -i '1i\
-vendor.dolby.hardware.dms::IDms u:object_r:hal_dms_hwservice:s0' $FILE
+vendor.dolby_v3_6.hardware.dms360::IDms u:object_r:hal_dms_hwservice:s0' $FILE
     ui_print " "
   fi
 fi
@@ -463,6 +497,7 @@ if [ "$LIST32BIT" ]; then
   DIR=/lib
   run_find_file
 fi
+sed -i 's|^install.hwlib=1|install.hwlib=0|g' $OPTIONALS
 }
 patch_manifest_eim() {
 if [ $EIM == true ]; then
@@ -474,15 +509,15 @@ if [ $EIM == true ]; then
     if [ ! -f $DES ]; then
       cp -af $SRC $DIR
     fi
-    if ! grep -A2 vendor.dolby.hardware.dms $DES | grep -q 1.0; then
+    if ! grep -A2 vendor.dolby_v3_6.hardware.dms360 $DES | grep -q 2.0; then
       ui_print "- Patching"
       ui_print "$SRC"
       ui_print "  systemlessly using early init mount..."
       sed -i '/<manifest/a\
     <hal format="hidl">\
-        <name>vendor.dolby.hardware.dms</name>\
+        <name>vendor.dolby_v3_6.hardware.dms360</name>\
         <transport>hwbinder</transport>\
-        <fqname>@1.0::IDms/default</fqname>\
+        <fqname>@2.0::IDms/default</fqname>\
     </hal>' $DES
       ui_print " "
     fi
@@ -506,7 +541,7 @@ if [ $EIM == true ]; then
       ui_print "$SRC"
       ui_print "  systemlessly using early init mount..."
       sed -i '1i\
-vendor.dolby.hardware.dms::IDms u:object_r:hal_dms_hwservice:s0' $DES
+vendor.dolby_v3_6.hardware.dms360::IDms u:object_r:hal_dms_hwservice:s0' $DES
       ui_print " "
     fi
   else
@@ -537,7 +572,7 @@ early_init_mount_dir
 # check
 chcon -R u:object_r:system_lib_file:s0 $MODPATH/system_support/lib*
 NAMES="libhidltransport.so libhwbinder.so"
-find_file
+#find_file
 rm -rf $MODPATH/system_support
 
 # patch manifest.xml
@@ -548,21 +583,21 @@ FILE="$MAGISKTMP/mirror/*/etc/vintf/manifest.xml
       $MAGISKTMP/mirror/*/*/etc/vintf/manifest/*.xml
       /*/etc/vintf/manifest/*.xml /*/*/etc/vintf/manifest/*.xml"
 if [ "`grep_prop dolby.skip.vendor $OPTIONALS`" != 1 ]\
-&& ! grep -A2 vendor.dolby.hardware.dms $FILE | grep -q 1.0; then
+&& ! grep -A2 vendor.dolby_v3_6.hardware.dms360 $FILE | grep -q 2.0; then
   FILE=$VENDOR/etc/vintf/manifest.xml
   patch_manifest
 fi
 if [ "`grep_prop dolby.skip.system $OPTIONALS`" != 1 ]\
-&& ! grep -A2 vendor.dolby.hardware.dms $FILE | grep -q 1.0; then
+&& ! grep -A2 vendor.dolby_v3_6.hardware.dms360 $FILE | grep -q 2.0; then
   FILE=$SYSTEM/etc/vintf/manifest.xml
   patch_manifest
 fi
 if [ "`grep_prop dolby.skip.system_ext $OPTIONALS`" != 1 ]\
-&& ! grep -A2 vendor.dolby.hardware.dms $FILE | grep -q 1.0; then
+&& ! grep -A2 vendor.dolby_v3_6.hardware.dms360 $FILE | grep -q 2.0; then
   FILE=$SYSTEM_EXT/etc/vintf/manifest.xml
   patch_manifest
 fi
-if ! grep -A2 vendor.dolby.hardware.dms $FILE | grep -q 1.0; then
+if ! grep -A2 vendor.dolby_v3_6.hardware.dms360 $FILE | grep -q 2.0; then
   patch_manifest_eim
   if [ $EIM == false ]; then
     ui_print "- Using systemless manifest.xml patch."
@@ -663,24 +698,15 @@ for APP in $APPS; do
 done
 }
 
-# ui app
-if [ "$MOD_UI" != true ]\
-&& [ "`grep_prop dolby.rc1 $OPTIONALS`" == 1 ]; then
-  ui_print "- Using RC1 app instead of RC4"
-  APPS="DaxUI daxService"
-  ui_print " "
-else
-  APPS=DolbyAtmos
-fi
-for APP in $APPS; do
-  rm -rf `find $MODPATH/system -type d -name $APP`
-done
-hide_app
-
 # hide
 APPS="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
 hide_oat
-APPS="MusicFX MotoDolbyV3 MotoDolbyDax3 OPSoundTuner"
+if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
+  APPS="MusicFX DaxUI MotoDolbyDax3 MotoDolbyV3
+        DolbyAtmos daxService"
+else
+  APPS=MusicFX
+fi
 hide_app
 
 # stream mode
@@ -689,7 +715,6 @@ PROP=`grep_prop stream.mode $OPTIONALS`
 if echo "$PROP" | grep -q m; then
   ui_print "- Activating music stream..."
   sed -i 's|#m||g' $FILE
-  sed -i 's|musicstream=|musicstream=true|g' $MODPATH/acdb.conf
   ui_print " "
 else
   APPS=AudioFX
@@ -767,14 +792,15 @@ if echo "$PROP" | grep -q g; then
 fi
 
 # settings
-FILE=$MODPATH/system/vendor/etc/dolby/dap-default.xml
+FILE=$MODPATH/system/vendor/etc/dolby/multimedia_dolby_dax_default.xml
 PROP=`grep_prop dolby.bass $OPTIONALS`
-if [ "$PROP" == def ]; then
-  ui_print "- Using default settings of bass-enhancer"
-elif [ "$PROP" == true ]; then
+if [ "$PROP" == true ]; then
   ui_print "- Changing all bass-enhancer-enable value to true"
   sed -i 's|bass-enhancer-enable value="false"|bass-enhancer-enable value="true"|g' $FILE
-elif [ "$PROP" ] && [ "$PROP" != false ] && [ "$PROP" -gt 0 ]; then
+elif [ "$PROP" == false ]; then
+  ui_print "- Changing all bass-enhancer-enable value to false"
+  sed -i 's|bass-enhancer-enable value="true"|bass-enhancer-enable value="false"|g' $FILE
+elif [ "$PROP" ] && [ "$PROP" != def ] && [ "$PROP" -gt 0 ]; then
   ui_print "- Changing all bass-enhancer-enable value to true"
   sed -i 's|bass-enhancer-enable value="false"|bass-enhancer-enable value="true"|g' $FILE
   ROWS=`grep bass-enhancer-boost $FILE | sed -e 's|<bass-enhancer-boost value="||g' -e 's|"/>||g'`
@@ -784,9 +810,6 @@ elif [ "$PROP" ] && [ "$PROP" != false ] && [ "$PROP" -gt 0 ]; then
   for ROW in $ROWS; do
     sed -i "s|bass-enhancer-boost value=\"$ROW\"|bass-enhancer-boost value=\"$PROP\"|g" $FILE
   done
-else
-  ui_print "- Changing all bass-enhancer-enable value to false"
-  sed -i 's|bass-enhancer-enable value="true"|bass-enhancer-enable value="false"|g' $FILE
 fi
 if [ "`grep_prop dolby.virtualizer $OPTIONALS`" == 1 ]; then
   ui_print "- Changing all virtualizer-enable value to true"
@@ -829,15 +852,75 @@ if [ "`grep_prop dolby.deepbass $OPTIONALS`" == 1 ]; then
 fi
 ui_print " "
 
+# function
+rename_file() {
+ui_print "- Renaming"
+ui_print "$FILE"
+ui_print "  to"
+ui_print "$MODFILE"
+mv -f $FILE $MODFILE
+ui_print " "
+}
+change_name() {
+if grep -q $NAME $FILE; then
+  ui_print "- Changing $NAME to $NAME2 at"
+  ui_print "$FILE"
+  ui_print "  Please wait..."
+  sed -i "s|$NAME|$NAME2|g" $FILE
+  ui_print " "
+fi
+}
+
 # mod
+FILE=$MODPATH/system/vendor/etc/dolby/multimedia_dolby_dax_default.xml
+MODFILE=$MODPATH/system/vendor/etc/dolby/op_dolby_dax_default_v3_6.xml
+rename_file
+NAME=/odm/etc/dolby/multimedia_dolby_dax_default.xml
+NAME2=/vendor/etc/dolby/op_dolby_dax_default_v3_6.xml
+FILE=$MODPATH/system/vendor/lib*/libdlbdsservice_v3_6.so
+change_name
 if [ "`grep_prop dolby.mod $OPTIONALS`" != 0 ]; then
-  NAME=libdlbdsservice.so
-  NAME2=libdapdsservice.so
+  NAME=dax_sqlite3.db
+  NAME2=dax_sq_v3_6.db
+  change_name
+  NAME=libswdap_v3_6.so
+  NAME2=libswdlb_v3_6.so
+  if [ "$IS64BIT" == true ]; then
+    FILE=$MODPATH/system/vendor/lib64/soundfx/$NAME
+    MODFILE=$MODPATH/system/vendor/lib64/soundfx/$NAME2
+    rename_file
+  fi
+  if [ "$LIST32BIT" ]; then
+    FILE=$MODPATH/system/vendor/lib/soundfx/$NAME
+    MODFILE=$MODPATH/system/vendor/lib/soundfx/$NAME2
+    rename_file
+  fi
+  FILE="$MODPATH/system/vendor/lib*/soundfx/$NAME2
+$MODPATH/.aml.sh"
+  change_name
+  NAME=libhwdap_v3_6.so
+  NAME2=libhwdlb_v3_6.so
+  if [ "$IS64BIT" == true ]; then
+    FILE=$MODPATH/system/vendor/lib64/soundfx/$NAME
+    MODFILE=$MODPATH/system/vendor/lib64/soundfx/$NAME2
+    rename_file
+  fi
+  if [ "$LIST32BIT" ]; then
+    FILE=$MODPATH/system/vendor/lib/soundfx/$NAME
+    MODFILE=$MODPATH/system/vendor/lib/soundfx/$NAME2
+    rename_file
+  fi
+  FILE="$MODPATH/system/vendor/lib*/soundfx/$NAME2
+$MODPATH/.aml.sh"
+  change_name
+  NAME=libdlbdsservice_v3_6.so
+  NAME2=libdapdsservice_v3_6.so
   if [ "$IS64BIT" == true ]; then
     FILE=$MODPATH/system/vendor/lib64/$NAME
     MODFILE=$MODPATH/system/vendor/lib64/$NAME2
     rename_file
-  else
+  fi
+  if [ "$LIST32BIT" ]; then
     FILE=$MODPATH/system/vendor/lib/$NAME
     MODFILE=$MODPATH/system/vendor/lib/$NAME2
     rename_file
@@ -845,6 +928,25 @@ if [ "`grep_prop dolby.mod $OPTIONALS`" != 0 ]; then
   FILE="$MODPATH/system/vendor/lib*/$NAME2
 $MODPATH/system/vendor/lib*/vendor.dolby*.hardware.dms*@*-impl.so
 $MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service"
+  change_name
+  sed -i 's|ro.oplus.audio.dolby.mod_uuid false|ro.oplus.audio.dolby.mod_uuid true|g' $MODPATH/service.sh
+  NAME=$'\x27\x99\x21\x85\x39'
+  NAME2=$'\x5f\x76\x33\x5f\x36'
+  FILE=$MODPATH/system/vendor/lib*/soundfx/libswdlb_v3_6.so
+  change_name
+  NAME=$'\x3e\x26\xda\x02\x53'
+  FILE=$MODPATH/system/vendor/lib*/soundfx/libhwdlb_v3_6.so
+  change_name
+  NAME=$'\x93\x7f\x67\x55\x87'
+  FILE=$MODPATH/system/vendor/lib*/soundfx/lib*wdlb_v3_6.so
+  change_name
+  NAME=2799218539
+  NAME2=5f76335f36
+  FILE=$MODPATH/.aml.sh
+  change_name
+  NAME=3e26da0253
+  change_name
+  NAME=537a04bcaa
   change_name
 fi
 
@@ -882,13 +984,12 @@ done
 
 # check
 if [ "$IS64BIT" == true ]; then
-  FILES=/lib64/libstagefrightdolby.so
-#  file_check_vendor
+  FILES=/lib64/libqtigef.so
+  file_check_vendor
 fi
 if [ "$LIST32BIT" ]; then
-  FILES="/lib/libstagefrightdolby.so
-         /lib/libstagefright_soft_ddpdec.so"
-#  file_check_vendor
+  FILES=/lib/libqtigef.so
+  file_check_vendor
 fi
 
 # vendor_overlay
@@ -916,7 +1017,6 @@ ui_print " "
 if [ "$BOOTMODE" == true ] && [ ! "$MAGISKPATH" ]; then
   unmount_mirror
 fi
-
 
 
 

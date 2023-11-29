@@ -1,3 +1,2 @@
-com.dolby.daxappui
-com.dolby.daxservice
-com.dolby.atmos
+com.oplus.audio.effectcenterui
+com.oplus.audio.effectcenter

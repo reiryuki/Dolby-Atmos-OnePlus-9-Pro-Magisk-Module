@@ -1,23 +1,22 @@
-# Dolby Atmos ZTE A2019 Pro Magisk Module
+# Dolby Atmos OnePlus 9 Pro Magisk Module
 
 ## DISCLAIMER
-- Dolby apps and blobs are owned by Dolby™.
-- The MIT license specified here is for the Magisk Module only, not for Dolby apps and blobs.
+- OnePlus & Dolby apps and blobs are owned by OnePlus™ & Dolby™.
+- The MIT license specified here is for the Magisk Module only, not for OnePlus & Dolby apps and blobs.
 
 ## Descriptions
-- Dolby Atmos soundfx equalizer ported from ZTE A2019 Pro (P845A02) and integrated as a Magisk Module for all supported and rooted devices with Magisk
+- Dolby Atmos soundfx equalizer ported from OnePlus 9 Pro (OnePlus9Pro) and integrated as a Magisk Module for all supported and rooted devices with Magisk
 - Global type soundfx
+- Conflicted with vendor.dolby.hardware.dms@2.0-service but not with vendor.dolby.hardware.dms@1.0-service
 
 ## Sources
-- https://dumps.tadiphone.dev/dumps/zte/p845a02 sdm845-user-9-PKQ1.181105.001-559-release-keys
-- system_32: https://dumps.tadiphone.dev/dumps/lenovo/7305i full_mt8321_GO-user-9-PPR1.180610.011-18-release-keys
-- Dolby Atmos RC4 & RC1 debug 2.2b Magisk Module by @guitardedhero
+- https://dumps.tadiphone.dev/dumps/oneplus/oneplus9pro qssi-user-13-TP1A.220905.001-1698121073735-release-keys--IN
 
 ## Screenshots
-- https://t.me/androidryukimodsdiscussions/66074
+- https://t.me/androidryukimods/1612
 
 ## Requirements
-- Android 9 and up
+- Android 11 and up
 - Magisk or KernelSU installed (Recommended to use Magisk Delta/Kitsune Mask for systemless early init mount manifest.xml if your ROM is Read-Only https://t.me/androidryukimodsdiscussions/100091)
 
 ## WARNING!!!
@@ -25,10 +24,7 @@
 
 ## Installation Guide & Download Link
 - Recommended to use Magisk Delta/Kitsune Mask https://t.me/androidryukimodsdiscussions/100091
-- Remove any other else Dolby Magisk module with different name (no need to remove if it's the same name)
-- Reboot
-- If you have Dolby in-built in your ROM, then you need to activate data.cleanup=1 at the first time install (READ Optionals bellow!)
-- Install this module https://www.pling.com/p/1531390/ via Magisk app or KernelSU app or Recovery if Magisk installed
+- Install this module https://www.pling.com/p/ via Magisk app or KernelSU app or Recovery if Magisk installed
 - Install AML Magisk Module https://t.me/androidryukimodsdiscussions/29836 only if using any other audio mod module
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot after
@@ -47,10 +43,6 @@
 - https://t.me/androidryukimodsdiscussions/2618
 
 ## Tested on
-- Android 10 CrDroid ROM
-- Android 11 DotOS ROM
-- Android 12 AncientOS ROM
-- Android 12.1 Nusantara ROM
 - Android 13 CrDroid ROM
 
 ## Credits and contributors
