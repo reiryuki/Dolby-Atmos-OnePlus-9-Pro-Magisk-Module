@@ -1,1 +1,204 @@
-
+<?xml version="1.0" encoding="utf-8"?>
+<!--Open VIP can improve the speed of decompilation, resource code translate to name automatically and activate the smart editing and automatic completion function-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+    android:versionCode="13000005"
+    android:versionName="13.0.5_reiryuki"
+    android:compileSdkVersion="33"
+    android:compileSdkVersionCodename="13"
+    package="com.oplus.audio.effectcenterui"
+    platformBuildVersionCode="33"
+    platformBuildVersionName="13">
+    <uses-sdk
+        android:minSdkVersion="30"
+        android:targetSdkVersion="33" />
+    <compatible-screens />
+    <!-- Internal system window -->
+    <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
+    <!-- Access surface flinger -->
+    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
+    <uses-permission android:name="android.permission.ROTATE_SURFACE_FLINGER" />
+    <!-- This app can appear on top of other apps -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" />
+    <!-- Modify system settings -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <!-- Schedule precisely timed actions -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Have full network access -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Connect to paired Bluetooth devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Pair with Bluetooth devices -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <!-- Change your audio settings -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <queries>
+        <package
+            android:name="com.oplus.audio.effectcenter" />
+    </queries>
+    <application
+        android:theme="@7F130044"
+        android:label="@7F120C94"
+        android:icon="@7F08058F"
+        android:name="com.oplus.settings.SettingsApplicationEx"
+        android:allowClearUserData="true"
+        android:backupAgent="com.android.settings.backup.SettingsBackupHelper"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:supportsRtl="true"
+        android:extractNativeLibs="false"
+        android:usesCleartextTraffic="true"
+        android:defaultToDeviceProtectedStorage="true"
+        android:directBootAware="true"
+        android:appComponentFactory="androidx.core.app.CoreComponentFactory">
+        <uses-library
+            android:name="oplus"
+            android:required="false" />
+        <activity
+            android:theme="@7F13023B"
+            android:label="@7F120C94"
+            android:name="com.oplus.partners.dolby.activity.DolbyMainActivity"
+            android:exported="true"
+            android:taskAffinity="android.task.dolby.maintask"
+            android:screenOrientation="3"
+            android:configChanges="0x00000D80"
+            android:uiOptions="0x00000001">
+            <intent-filter>
+                <action
+                    android:name="oplus.intent.action.settings.DOLBY_MAIN" />
+                <action
+                    android:name="android.intent.action.MAIN" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity-alias
+            android:theme="@7F13023B"
+            android:label="@7F120C94"
+            android:name=".DolbyMainActivity"
+            android:exported="true"
+            android:taskAffinity="android.task.dolby.maintask"
+            android:screenOrientation="3"
+            android:targetActivity="com.oplus.partners.dolby.activity.DolbyMainActivity"
+            android:uiOptions="0x00000001"
+            android:resizeableActivity="true">
+            <intent-filter>
+                <action
+                    android:name="android.intent.action.MAIN" />
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+                <category
+                    android:name="android.intent.category.CATEGORY_CONTENT_MUSIC" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="miui.intent.action.HEADSET_SETTINGS" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="com.dolby.LAUNCH_DS_APP" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity-alias>
+        <activity
+            android:theme="@7F13023B"
+            android:label="@7F1218E7"
+            android:name="com.oplus.partners.dolby.activity.OrealityMainActivity"
+            android:exported="true"
+            android:taskAffinity="android.task.oreality.maintask"
+            android:screenOrientation="3"
+            android:configChanges="0x00000D80"
+            android:uiOptions="0x00000001">
+            <intent-filter>
+                <action
+                    android:name="oplus.intent.action.settings.OREALTY_MAIN" />
+                <action
+                    android:name="android.intent.action.MAIN" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="android.intent.action.MAIN" />
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+                <category
+                    android:name="android.intent.category.CATEGORY_CONTENT_MUSIC" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="miui.intent.action.HEADSET_SETTINGS" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="com.dolby.LAUNCH_DS_APP" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <service
+            android:label="@7F120C94"
+            android:icon="@7F08059F"
+            android:name="com.oplus.partners.dolby.DolbyTileService"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+        <activity
+            android:theme="@7F1305AB"
+            android:label="@7F121ECE"
+            android:name="com.oplus.settings.feature.homepage.OplusDeepLinkHomepageActivity"
+            android:permission="android.permission.LAUNCH_MULTI_PANE_SETTINGS_DEEP_LINK"
+            android:enabled="false"
+            android:exported="true"
+            android:taskAffinity=""
+            android:launchMode="2"
+            android:configChanges="0x00000DB0">
+            <intent-filter>
+                <action
+                    android:name="android.settings.SETTINGS_EMBED_DEEP_LINK_ACTIVITY" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
+                android:value="true" />
+        </activity>
+        <receiver
+            android:name="com.android.settings.search.SearchStateReceiver"
+            android:permission="android.permission.READ_SEARCH_INDEXABLES"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action
+                    android:name="com.android.settings.SEARCH_START" />
+                <action
+                    android:name="com.android.settings.SEARCH_EXIT" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
