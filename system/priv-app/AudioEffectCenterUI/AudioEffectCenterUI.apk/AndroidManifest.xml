@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Open VIP can improve the speed of decompilation, resource code translate to name automatically and activate the smart editing and automatic completion function-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:versionCode="13000005"
@@ -13,25 +12,16 @@
         android:minSdkVersion="30"
         android:targetSdkVersion="33" />
     <compatible-screens />
-    <!-- Internal system window -->
     <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
-    <!-- Access surface flinger -->
     <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
     <uses-permission android:name="android.permission.ROTATE_SURFACE_FLINGER" />
-    <!-- This app can appear on top of other apps -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" />
-    <!-- Modify system settings -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
-    <!-- Schedule precisely timed actions -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <!-- Have full network access -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Connect to paired Bluetooth devices -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <!-- Pair with Bluetooth devices -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <!-- Change your audio settings -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <queries>
         <package
