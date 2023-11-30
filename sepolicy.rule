@@ -81,7 +81,7 @@ allow audioserver audioserver tcp_socket create
 ## Oplus
 
 # file
-allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } oppo_fingerprint_prop file { read open }
+allow { system_app priv_app platform_app untrusted_app_29 untrusted_app_27 untrusted_app } oppo_fingerprint_prop file { read open getattr }
 
 
 
