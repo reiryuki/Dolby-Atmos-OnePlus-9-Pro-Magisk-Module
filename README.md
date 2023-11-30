@@ -16,6 +16,7 @@
 - https://t.me/androidryukimods/1612
 
 ## Requirements
+- 64 bit architecture
 - Android 11 and up
 - Magisk or KernelSU installed (Recommended to use Magisk Delta/Kitsune Mask for systemless early init mount manifest.xml if your ROM is Read-Only https://t.me/androidryukimodsdiscussions/100091)
 

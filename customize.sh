@@ -57,14 +57,11 @@ if [ "$IS64BIT" == true ]; then
     ui_print "- 32 bit library support"
   else
     ui_print "- Doesn't support 32 bit library"
-    rm -rf $MODPATH/armeabi-v7a $MODPATH/x86\
-     $MODPATH/system*/lib $MODPATH/system*/vendor/lib
+    rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
   fi
   ui_print " "
 else
-  ui_print "- 32 bit architecture"
-  rm -rf `find $MODPATH -type d -name *64`
-  ui_print " "
+  abort "- This module is only for 64 bit architecture."
 fi
 
 # sdk
@@ -129,15 +126,15 @@ if [ "$IS64BIT" == true ]; then
   ui_print "  function at"
   ui_print "$FILE"
   ui_print "  Please wait..."
-  if grep -q $NAME $FILE; then
-    FUNC64=true
-  else
-    ui_print "  Function not found."
-    FUNC64=false
+  if ! grep -q $NAME $FILE; then
+    ui_print "  ! Function not found."
+    ui_print "    Unsupported ROM."
+    if [ "$BOOTMODE" == true ] && [ ! "$MAGISKPATH" ]; then
+      unmount_mirror
+    fi
+    abort
   fi
   ui_print " "
-else
-  FUNC64=false
 fi
 if [ "$LIST32BIT" ]; then
   FILE=$VENDOR/lib/hw/*audio*.so
@@ -146,22 +143,12 @@ if [ "$LIST32BIT" ]; then
   ui_print "  function at"
   ui_print "$FILE"
   ui_print "  Please wait..."
-  if grep -q $NAME $FILE; then
-    FUNC32=true
-  else
+  if ! grep -q $NAME $FILE; then
     ui_print "  Function not found."
-    FUNC32=false
+    unset LIST32BIT
+    rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
   fi
   ui_print " "
-else
-  FUNC32=false
-fi
-if [ $FUNC64 == true ] && [ $FUNC32 == false ]; then
-  rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
-elif [ $FUNC64 == false ] && [ $FUNC32 == true ]; then
-  rm -rf `find $MODPATH -type d -name *64`
-elif [ $FUNC64 == false ] && [ $FUNC32 == false ]; then
-  abort
 fi
 
 # function
@@ -275,7 +262,7 @@ done
 NAMES=DolbyAtmos
 FILE=/data/adb/modules/$NAMES/module.prop
 if grep -q 'Moto G52' $FILE\
-|| grep -q 'OnePlus 8' $FILE; then
+|| grep -q 'OnePlus 8 Visible' $FILE; then
   conflict
 fi
 NAMES=MiSound
@@ -401,47 +388,58 @@ if echo $MAGISK_VER | grep -Eq 'delta|Delta|kitsune'\
     MOUNT=`mount | grep $MAGISKTMP/preinit`
     BLOCK=`echo $MOUNT | sed 's| on.*||g'`
     DIR=`mount | sed "s|$MOUNT||g" | grep -m 1 $BLOCK`
-    EIMDIR=`echo $DIR | sed "s|$BLOCK on ||g" | sed 's| type.*||g'`/early-mount.d
-  elif ! $ISENCRYPTED; then
-    EIMDIR=/data/adb/early-mount.d
-  elif [ -d /data/unencrypted ]\
-  && ! grep ' /data ' /proc/mounts | grep -q dm-\
-  && grep ' /data ' /proc/mounts | grep -q ext4; then
-    EIMDIR=/data/unencrypted/early-mount.d
-  elif grep ' /cache ' /proc/mounts | grep -q ext4; then
-    EIMDIR=/cache/early-mount.d
-  elif grep ' /metadata ' /proc/mounts | grep -q ext4; then
-    EIMDIR=/metadata/early-mount.d
-  elif grep ' /persist ' /proc/mounts | grep -q ext4; then
-    EIMDIR=/persist/early-mount.d
-  elif grep ' /mnt/vendor/persist ' /proc/mounts | grep -q ext4; then
-    EIMDIR=/mnt/vendor/persist/early-mount.d
-  elif grep ' /cust ' /proc/mounts | grep -q ext4; then
-    EIMDIR=/cust/early-mount.d
-  elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
-  && [ -d /data/unencrypted ]\
-  && ! grep ' /data ' /proc/mounts | grep -q dm-\
-  && grep ' /data ' /proc/mounts | grep -q f2fs; then
-    EIMDIR=/data/unencrypted/early-mount.d
-  elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
-  && grep ' /cache ' /proc/mounts | grep -q f2fs; then
-    EIMDIR=/cache/early-mount.d
-  elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
-  && grep ' /metadata ' /proc/mounts | grep -q f2fs; then
-    EIMDIR=/metadata/early-mount.d
-  elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
-  && grep ' /persist ' /proc/mounts | grep -q f2fs; then
-    EIMDIR=/persist/early-mount.d
-  elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
-  && grep ' /mnt/vendor/persist ' /proc/mounts | grep -q f2fs; then
-    EIMDIR=/mnt/vendor/persist/early-mount.d
-  elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
-  && grep ' /cust ' /proc/mounts | grep -q f2fs; then
-    EIMDIR=/cust/early-mount.d
-  else
-    EIM=false
-    ui_print "- Unable to find early init mount directory"
-    ui_print " "
+    DIR=`echo $DIR | sed "s|$BLOCK on ||g" | sed 's| type.*||g'`
+    if [ "$DIR" ]; then
+      EIMDIR=$DIR/early-mount.d
+    else
+      ui_print "! It seems Magisk early init mount directory is not"
+      ui_print "  activated yet. Please reinstall Magisk.zip via Magisk app"
+      ui_print "  (not via Recovery)."
+      ui_print " "
+    fi
+  fi
+  if [ ! "$EIMDIR" ]; then
+    if ! $ISENCRYPTED; then
+      EIMDIR=/data/adb/early-mount.d
+    elif [ -d /data/unencrypted ]\
+    && ! grep ' /data ' /proc/mounts | grep -q dm-\
+    && grep ' /data ' /proc/mounts | grep -q ext4; then
+      EIMDIR=/data/unencrypted/early-mount.d
+    elif grep ' /cache ' /proc/mounts | grep -q ext4; then
+      EIMDIR=/cache/early-mount.d
+    elif grep ' /metadata ' /proc/mounts | grep -q ext4; then
+      EIMDIR=/metadata/early-mount.d
+    elif grep ' /persist ' /proc/mounts | grep -q ext4; then
+      EIMDIR=/persist/early-mount.d
+    elif grep ' /mnt/vendor/persist ' /proc/mounts | grep -q ext4; then
+      EIMDIR=/mnt/vendor/persist/early-mount.d
+    elif grep ' /cust ' /proc/mounts | grep -q ext4; then
+      EIMDIR=/cust/early-mount.d
+    elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
+    && [ -d /data/unencrypted ]\
+    && ! grep ' /data ' /proc/mounts | grep -q dm-\
+    && grep ' /data ' /proc/mounts | grep -q f2fs; then
+      EIMDIR=/data/unencrypted/early-mount.d
+    elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
+    && grep ' /cache ' /proc/mounts | grep -q f2fs; then
+      EIMDIR=/cache/early-mount.d
+    elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
+    && grep ' /metadata ' /proc/mounts | grep -q f2fs; then
+      EIMDIR=/metadata/early-mount.d
+    elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
+    && grep ' /persist ' /proc/mounts | grep -q f2fs; then
+      EIMDIR=/persist/early-mount.d
+    elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
+    && grep ' /mnt/vendor/persist ' /proc/mounts | grep -q f2fs; then
+      EIMDIR=/mnt/vendor/persist/early-mount.d
+    elif [ "$MAGISK_VER_CODE" -ge 26000 ]\
+    && grep ' /cust ' /proc/mounts | grep -q f2fs; then
+      EIMDIR=/cust/early-mount.d
+    else
+      EIM=false
+      ui_print "- Unable to find early init mount directory"
+      ui_print " "
+    fi
   fi
   if [ -d ${EIMDIR%/early-mount.d} ]; then
     mkdir -p $EIMDIR
@@ -703,7 +701,7 @@ APPS="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
 hide_oat
 if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
   APPS="MusicFX DaxUI MotoDolbyDax3 MotoDolbyV3
-        DolbyAtmos daxService"
+        DolbyAtmos daxService OPSoundTuner"
 else
   APPS=MusicFX
 fi
@@ -854,12 +852,14 @@ ui_print " "
 
 # function
 rename_file() {
-ui_print "- Renaming"
-ui_print "$FILE"
-ui_print "  to"
-ui_print "$MODFILE"
-mv -f $FILE $MODFILE
-ui_print " "
+if [ -f $FILE ]; then
+  ui_print "- Renaming"
+  ui_print "$FILE"
+  ui_print "  to"
+  ui_print "$MODFILE"
+  mv -f $FILE $MODFILE
+  ui_print " "
+fi
 }
 change_name() {
 if grep -q $NAME $FILE; then
