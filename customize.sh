@@ -162,7 +162,7 @@ ui_print "$FILE"
 ui_print "  Please wait..."
 if ! grep -q $NAME $FILE; then
   ui_print "  Function not found."
-  ui_print "  Using new $DIR$LIB"
+  ui_print "  Using new $DIR/$LIB"
   mv -f $MODPATH/system_support$DIR/$LIB $MODPATH/system$DIR
 fi
 ui_print " "
@@ -259,6 +259,10 @@ done
 }
 
 # conflict
+if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
+  NAMES="dsplus Dolby"
+  conflict
+fi
 NAMES=DolbyAtmos
 FILE=/data/adb/modules/$NAMES/module.prop
 if grep -q 'Moto G52' $FILE\
@@ -931,7 +935,7 @@ $MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service"
   change_name
   sed -i 's|ro.oplus.audio.dolby.mod_uuid false|ro.oplus.audio.dolby.mod_uuid true|g' $MODPATH/service.sh
   NAME=$'\x27\x99\x21\x85\x39'
-  NAME2=$'\x5f\x76\x33\x5f\x36'
+  NAME2=_v3_6
   FILE=$MODPATH/system/vendor/lib*/soundfx/libswdlb_v3_6.so
   change_name
   NAME=$'\x3e\x26\xda\x02\x53'
