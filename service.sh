@@ -9,25 +9,26 @@ set -x
 API=`getprop ro.build.version.sdk`
 
 # property
-resetprop ro.audio.ignore_effects false
-resetprop ro.build.version.oplusrom V13.1.0
-resetprop ro.vendor.dolby.dax.version DAX3_3.6.0.12_r1
-resetprop ro.vendor.dolby.model PAFM00
-resetprop ro.vendor.dolby.device OP46C3
-resetprop ro.vendor.dolby.manufacturer OPLUS
-resetprop ro.vendor.dolby.brand OPLUS
-resetprop ro.oplus.audio.effect.type dolby
-resetprop vendor.audio.dolby.ds2.enabled false
-resetprop vendor.audio.dolby.ds2.hardbypass false
-resetprop ro.oplus.audio.dolby.equalizer_support true
-resetprop ro.oplus.audio.dolby.movieToMusic_support true
-resetprop ro.oplus.audio.dolby.mod_uuid false
-#resetprop persist.vendor.dolby.loglevel 0
-#resetprop vendor.audio.gef.debug.flags false
-#resetprop vendor.audio.gef.enable.traces false
-#resetprop vendor.dolby.dap.param.tee false
-#resetprop vendor.dolby.mi.metadata.log false
-#resetprop vendor.dolby.debug.dap_pcm_dump false
+resetprop -n ro.audio.ignore_effects false
+resetprop -n ro.build.version.oplusrom V13.1.0
+resetprop -n ro.vendor.dolby.dax.version DAX3_3.6.0.12_r1
+resetprop -n ro.vendor.dolby.model PAFM00
+resetprop -n ro.vendor.dolby.device OP46C3
+resetprop -n ro.vendor.dolby.manufacturer OPLUS
+resetprop -n ro.vendor.dolby.brand OPLUS
+resetprop -n ro.oplus.audio.effect.type dolby
+resetprop -n vendor.audio.dolby.ds2.enabled false
+resetprop -n vendor.audio.dolby.ds2.hardbypass false
+resetprop -n ro.oplus.audio.dolby.equalizer_support true
+resetprop -n ro.oplus.audio.dolby.movieToMusic_support true
+resetprop -n ro.oplus.audio.dolby.mod_uuid false
+#resetprop -p --delete persist.vendor.dolby.loglevel
+#resetprop -n persist.vendor.dolby.loglevel 0
+#resetprop -n vendor.audio.gef.debug.flags false
+#resetprop -n vendor.audio.gef.enable.traces false
+#resetprop -n vendor.dolby.dap.param.tee false
+#resetprop -n vendor.dolby.mi.metadata.log false
+#resetprop -n vendor.dolby.debug.dap_pcm_dump false
 
 # restart
 if [ "$API" -ge 24 ]; then
@@ -88,6 +89,7 @@ killall vendor.qti.hardware.vibrator.service\
  android.hardware.sensors@2.0-service-mediatek\
  android.hardware.sensors@2.0-service.multihal\
  android.hardware.health-service.qti
+#skillall vendor.qti.hardware.display.allocator-service
 
 # wait
 sleep 20
