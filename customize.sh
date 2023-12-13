@@ -57,7 +57,8 @@ if [ "$IS64BIT" == true ]; then
     ui_print "- 32 bit library support"
   else
     ui_print "- Doesn't support 32 bit library"
-    rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
+    rm -rf $MODPATH/armeabi-v7a $MODPATH/x86\
+     $MODPATH/system*/lib $MODPATH/system*/vendor/lib
   fi
   ui_print " "
 else
@@ -146,8 +147,7 @@ if [ "$LIST32BIT" ]; then
   if ! grep -q $NAME $FILE; then
     ui_print "  Function not found."
     unset LIST32BIT
-    rm -rf $MODPATH/armeabi-v7a $MODPATH/x86\
-     $MODPATH/system*/lib $MODPATH/system*/vendor/lib
+    rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
   fi
   ui_print " "
 fi
