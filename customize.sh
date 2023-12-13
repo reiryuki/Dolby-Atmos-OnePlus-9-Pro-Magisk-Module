@@ -146,7 +146,8 @@ if [ "$LIST32BIT" ]; then
   if ! grep -q $NAME $FILE; then
     ui_print "  Function not found."
     unset LIST32BIT
-    rm -rf $MODPATH/system*/lib $MODPATH/system*/vendor/lib
+    rm -rf $MODPATH/armeabi-v7a $MODPATH/x86\
+     $MODPATH/system*/lib $MODPATH/system*/vendor/lib
   fi
   ui_print " "
 fi
@@ -1000,7 +1001,11 @@ if [ "$IS64BIT" == true ]; then
   file_check_vendor
 fi
 if [ "$LIST32BIT" ]; then
-  FILES=/lib/libqtigef.so
+  FILES="/lib/libqtigef.so
+         /lib/libstagefrightdolby.so
+         /lib/libdeccfg_v3_6.so
+         /lib/libstagefright_soft_ddpdec_v3_6.so
+         /lib/libstagefright_soft_ac4dec_v3_6.so"
   file_check_vendor
 fi
 
