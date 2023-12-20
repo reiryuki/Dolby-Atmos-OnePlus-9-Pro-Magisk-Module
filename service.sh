@@ -22,6 +22,8 @@ resetprop -n vendor.audio.dolby.ds2.hardbypass false
 resetprop -n ro.oplus.audio.dolby.equalizer_support true
 resetprop -n ro.oplus.audio.dolby.movieToMusic_support true
 resetprop -n ro.oplus.audio.dolby.mod_uuid false
+resetprop -n oplus.dolby.effect.toast 0
+resetprop -n oplus.dolby.debug.switch 0
 #resetprop -p --delete persist.vendor.dolby.loglevel
 #resetprop -n persist.vendor.dolby.loglevel 0
 #resetprop -n vendor.audio.gef.debug.flags false
