@@ -51,7 +51,6 @@
             android:label="@7F120C94"
             android:name="com.oplus.partners.dolby.activity.DolbyMainActivity"
             android:exported="true"
-            android:taskAffinity="android.task.dolby.maintask"
             android:screenOrientation="3"
             android:configChanges="0x00000D80"
             android:uiOptions="0x00000001">
@@ -69,7 +68,6 @@
             android:label="@7F120C94"
             android:name=".DolbyMainActivity"
             android:exported="true"
-            android:taskAffinity="android.task.dolby.maintask"
             android:screenOrientation="3"
             android:targetActivity="com.oplus.partners.dolby.activity.DolbyMainActivity"
             android:uiOptions="0x00000001"
