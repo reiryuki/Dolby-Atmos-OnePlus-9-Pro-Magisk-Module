@@ -44,7 +44,7 @@
 - https://t.me/androidryukimodsdiscussions/2618
 
 ## Tested on
-- Android 13 CrDroid ROM
+- Android 13 CrDroid ROM & AlphaDroid ROM
 
 ## Credits and contributors
 - https://t.me/viperatmos
