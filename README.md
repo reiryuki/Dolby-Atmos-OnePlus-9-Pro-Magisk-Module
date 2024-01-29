@@ -7,10 +7,11 @@
 ## Descriptions
 - Dolby Atmos soundfx equalizer ported from OnePlus 9 Pro (OnePlus9Pro) and integrated as a Magisk Module for all supported and rooted devices with Magisk
 - Global type soundfx
-- Conflicted with `vendor.dolby.hardware.dms@2.0-service`
+- Conflicted with `vendor.dolby.hardware.dms@2.0-service` & `vendor.dolby_sp.hardware.dmssp@2.0-service`
 
 ## Sources
 - https://dumps.tadiphone.dev/dumps/oneplus/oneplus9pro qssi-user-13-TP1A.220905.001-1698121073735-release-keys--IN
+- libhidlbase.so: CrDroid ROM Android 13
 
 ## Screenshots
 - https://t.me/androidryukimods/1612
@@ -45,6 +46,9 @@
 
 ## Tested on
 - Android 13 CrDroid ROM & AlphaDroid ROM
+
+## Known Issue
+- Unsupported in some Android 14 ROMs
 
 ## Credits and contributors
 - https://t.me/viperatmos
