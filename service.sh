@@ -10,7 +10,9 @@ API=`getprop ro.build.version.sdk`
 
 # property
 resetprop -n ro.audio.ignore_effects false
-resetprop -n ro.build.version.oplusrom V13.1.0
+if [ ! "`resetprop ro.build.version.oplusrom`" ]; then
+  resetprop -n ro.build.version.oplusrom V13.1.0
+fi
 resetprop -n ro.vendor.dolby.dax.version DAX3_3.6.0.12_r1
 resetprop -n ro.vendor.dolby.model PAFM00
 resetprop -n ro.vendor.dolby.device OP46C3
