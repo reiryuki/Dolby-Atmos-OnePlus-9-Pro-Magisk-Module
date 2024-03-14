@@ -10,8 +10,9 @@ API=`getprop ro.build.version.sdk`
 
 # property
 resetprop -n ro.audio.ignore_effects false
-if [ ! "`resetprop ro.build.version.oplusrom`" ]; then
-  resetprop -n ro.build.version.oplusrom V13.1.0
+PROP=ro.build.version.oplusrom
+if [ ! "`getprop $PROP`" ]; then
+  resetprop -n $PROP V13.1.0
 fi
 resetprop -n ro.vendor.dolby.dax.version DAX3_3.6.0.12_r1
 resetprop -n ro.vendor.dolby.model PAFM00
@@ -98,11 +99,13 @@ killall vendor.qti.hardware.vibrator.service\
  vendor.qti.hardware.lights.service\
  android.hardware.health-service.qti
 #skillall vendor.qti.hardware.display.allocator-service\
-#s vendor.qti.hardware.display.composer-service
+#s vendor.qti.hardware.display.composer-service\
+#s camerahalserver
 #xkillall android.hardware.sensors@1.0-service\
 #x android.hardware.sensors@2.0-service\
 #x android.hardware.sensors@2.0-service-mediatek\
-#x android.hardware.sensors@2.0-service.multihal
+#x android.hardware.sensors@2.0-service.multihal\
+#x android.hardware.sensors@2.0-service.multihal-mediatek
 
 # wait
 sleep 20
