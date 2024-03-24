@@ -167,7 +167,6 @@ if [ "$LIST32BIT" ]; then
   FILE=`for LIST in $LISTS; do echo $SYSTEM$DIR/$LIST; done`
   check_function_2
 fi
-rm -rf $MODPATH/system_support
 
 # sepolicy
 FILE=$MODPATH/sepolicy.rule
@@ -217,7 +216,7 @@ else
   rm -f /data/vendor/dolby/dax_sq_v3_6.db
   sed -i 's|dax_sqlite3.db|dax_sq_v3_6.db|g' $MODPATH/uninstall.sh
 fi
-rm -rf $MODPATH/unused
+rm -rf $MODPATH/system_support $MODPATH/unused
 remove_sepolicy_rule
 ui_print " "
 
@@ -237,12 +236,12 @@ for NAME in $NAMES; do
     sh $FILE
     rm -f $FILE
   fi
-  rm -rf /metadata/magisk/$NAME
-  rm -rf /mnt/vendor/persist/magisk/$NAME
-  rm -rf /persist/magisk/$NAME
-  rm -rf /data/unencrypted/magisk/$NAME
-  rm -rf /cache/magisk/$NAME
-  rm -rf /cust/magisk/$NAME
+  rm -rf /metadata/magisk/$NAME\
+   /mnt/vendor/persist/magisk/$NAME\
+   /persist/magisk/$NAME\
+   /data/unencrypted/magisk/$NAME\
+   /cache/magisk/$NAME\
+   /cust/magisk/$NAME
 done
 }
 
@@ -759,6 +758,33 @@ fi
 ui_print " "
 
 # function
+file_check_vendor() {
+for FILE in $FILES; do
+  DES=$VENDOR$FILE
+  DES2=$ODM$FILE
+  if [ -f $DES ] || [ -f $DES2 ]; then
+    ui_print "- Detected $FILE"
+    ui_print " "
+    rm -f $MODPATH/system/vendor$FILE
+  fi
+done
+}
+
+# check
+if [ "$IS64BIT" == true ]; then
+  FILES=/lib64/libqtigef.so
+  file_check_vendor
+fi
+if [ "$LIST32BIT" ]; then
+  FILES="/lib/libqtigef.so
+         /lib/libstagefrightdolby.so
+         /lib/libdeccfg_v3_6.so
+         /lib/libstagefright_soft_ddpdec_v3_6.so
+         /lib/libstagefright_soft_ac4dec_v3_6.so"
+  file_check_vendor
+fi
+
+# function
 rename_file() {
 if [ -f $FILE ]; then
   ui_print "- Renaming"
@@ -780,6 +806,24 @@ fi
 }
 
 # mod
+NAME=libstagefright_foundation.so
+NAME2=libstagefright_fndtn_v3_6.so
+if [ "$IS64BIT" == true ]; then
+  FILE=$MODPATH/system/vendor/lib64/$NAME
+  MODFILE=$MODPATH/system/vendor/lib64/$NAME2
+  rename_file
+fi
+if [ "$LIST32BIT" ]; then
+  FILE=$MODPATH/system/vendor/lib/$NAME
+  MODFILE=$MODPATH/system/vendor/lib/$NAME2
+  rename_file
+fi
+FILE="$MODPATH/system/vendor/lib*/$NAME2
+$MODPATH/system/vendor/lib*/libdlbdsservice_v3_6.so
+$MODPATH/system/vendor/lib*/libstagefrightdolby.so
+$MODPATH/system/vendor/lib*/libstagefright_soft_ddpdec_v3_6.so
+$MODPATH/system/vendor/lib*/libstagefright_soft_ac4dec_v3_6.so"
+change_name
 FILE=$MODPATH/system/vendor/etc/dolby/multimedia_dolby_dax_default.xml
 MODFILE=$MODPATH/system/vendor/etc/dolby/op_dolby_dax_default_v3_6.xml
 rename_file
@@ -856,33 +900,6 @@ $MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service"
   change_name
   NAME=537a04bcaa
   change_name
-fi
-
-# function
-file_check_vendor() {
-for FILE in $FILES; do
-  DES=$VENDOR$FILE
-  DES2=$ODM$FILE
-  if [ -f $DES ] || [ -f $DES2 ]; then
-    ui_print "- Detected $FILE"
-    ui_print " "
-    rm -f $MODPATH/system/vendor$FILE
-  fi
-done
-}
-
-# check
-if [ "$IS64BIT" == true ]; then
-  FILES=/lib64/libqtigef.so
-  file_check_vendor
-fi
-if [ "$LIST32BIT" ]; then
-  FILES="/lib/libqtigef.so
-         /lib/libstagefrightdolby.so
-         /lib/libdeccfg_v3_6.so
-         /lib/libstagefright_soft_ddpdec_v3_6.so
-         /lib/libstagefright_soft_ac4dec_v3_6.so"
-  file_check_vendor
 fi
 
 # fix sensor
