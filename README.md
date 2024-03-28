@@ -31,6 +31,7 @@
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
 - If you are using SUList, you need to allow list manually your home launcher app (enable show system apps) and reboot afterwards
+- If you have an issue with your in-built Spatial Audio, then install AOSP soundfx Remover also: https://github.com/reiryuki/AOSP-soundfx-Remover-Magisk-Module
 
 ## Optionals
 - https://t.me/androidryukimodsdiscussions/2616
