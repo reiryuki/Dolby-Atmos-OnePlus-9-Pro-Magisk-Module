@@ -55,7 +55,7 @@
 		>
 	</uses-permission>
 	<uses-permission
-		android:name="android.permission.SCHEDULE_EXACT_ALARM"
+		android:name="android.permission.USE_EXACT_ALARM"
 		>
 	</uses-permission>
 	<uses-permission
