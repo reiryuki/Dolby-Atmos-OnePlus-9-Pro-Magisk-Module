@@ -257,7 +257,7 @@ if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
   NAMES="dsplus Dolby"
   conflict
 fi
-NAMES= DolbyAtmosSP
+NAMES=DolbyAtmosSP
 conflict
 NAMES=DolbyAtmos
 FILE=/data/adb/modules/$NAMES/module.prop
@@ -778,6 +778,8 @@ done
 }
 
 # check
+FILES=/etc/media_codecs_dolby_audio.xml
+file_check_vendor
 if [ "$IS64BIT" == true ]; then
   FILES=/lib64/libqtigef.so
   file_check_vendor
