@@ -15,9 +15,18 @@
 		android:targetSdkVersion="33"
 		>
 	</uses-sdk>
-	<compatible-screens
+	<uses-permission
+		android:name="android.permission.QUERY_ALL_PACKAGES"
 		>
-	</compatible-screens>
+	</uses-permission>
+	<uses-permission
+		android:name="android.permission.READ_SAFETY_CENTER_STATUS"
+		>
+	</uses-permission>
+	<uses-permission
+		android:name="android.permission.SEND_SAFETY_CENTER_UPDATE"
+		>
+	</uses-permission>
 	<uses-permission
 		android:name="android.permission.QUERY_AUDIO_STATE"
 		>
@@ -88,7 +97,7 @@
 		android:name="com.oplus.settings.SettingsApplicationEx"
 		android:allowClearUserData="true"
 		android:backupAgent="com.android.settings.backup.SettingsBackupHelper"
-		android:allowBackup="true"
+		android:allowBackup="false"
 		android:hardwareAccelerated="true"
 		android:supportsRtl="true"
 		android:extractNativeLibs="false"
@@ -96,6 +105,7 @@
 		android:defaultToDeviceProtectedStorage="true"
 		android:directBootAware="true"
 		android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+		android:usesNonSdkApi="true"
 		>
 		<uses-library
 			android:name="oplus"
@@ -121,95 +131,18 @@
 					android:name="android.intent.action.MAIN"
 					>
 				</action>
-				<category
-					android:name="android.intent.category.DEFAULT"
-					>
-				</category>
-			</intent-filter>
-		</activity>
-		<activity-alias
-			android:theme="@7F13023B"
-			android:label="@7F120C94"
-			android:name=".DolbyMainActivity"
-			android:exported="true"
-			android:screenOrientation="3"
-			android:targetActivity="com.oplus.partners.dolby.activity.DolbyMainActivity"
-			android:uiOptions="0x00000001"
-			android:resizeableActivity="true"
-			>
-			<intent-filter
-				>
-				<action
-					android:name="android.intent.action.MAIN"
-					>
-				</action>
-				<category
-					android:name="android.intent.category.LAUNCHER"
-					>
-				</category>
-			</intent-filter>
-			<intent-filter
-				>
-				<action
-					android:name="android.media.action.DISPLAY_AUDIO_EFFECT_CONTROL_PANEL"
-					>
-				</action>
-				<category
-					android:name="android.intent.category.DEFAULT"
-					>
-				</category>
-				<category
-					android:name="android.intent.category.CATEGORY_CONTENT_MUSIC"
-					>
-				</category>
-			</intent-filter>
-			<intent-filter
-				>
-				<action
-					android:name="miui.intent.action.HEADSET_SETTINGS"
-					>
-				</action>
-				<category
-					android:name="android.intent.category.DEFAULT"
-					>
-				</category>
-			</intent-filter>
-			<intent-filter
-				>
 				<action
 					android:name="com.dolby.LAUNCH_DS_APP"
 					>
 				</action>
-				<category
-					android:name="android.intent.category.DEFAULT"
+				<action
+					android:name="miui.intent.action.HEADSET_SETTINGS"
 					>
-				</category>
+				</action>
 				<action
 					android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"
 					>
 				</action>
-			</intent-filter>
-		</activity-alias>
-		<activity
-			android:theme="@7F13023B"
-			android:label="@7F1218E7"
-			android:name="com.oplus.partners.dolby.activity.OrealityMainActivity"
-			android:exported="true"
-			android:taskAffinity="android.task.oreality.maintask"
-			android:screenOrientation="3"
-			android:configChanges="0x00000D80"
-			android:uiOptions="0x00000001"
-			>
-			<intent-filter
-				>
-				<action
-					android:name="oplus.intent.action.settings.OREALTY_MAIN"
-					>
-				</action>
-				<action
-					android:name="android.intent.action.MAIN"
-					>
-				</action>
 				<category
 					android:name="android.intent.category.DEFAULT"
 					>
@@ -238,28 +171,6 @@
 				</category>
 				<category
 					android:name="android.intent.category.CATEGORY_CONTENT_MUSIC"
-					>
-				</category>
-			</intent-filter>
-			<intent-filter
-				>
-				<action
-					android:name="miui.intent.action.HEADSET_SETTINGS"
-					>
-				</action>
-				<category
-					android:name="android.intent.category.DEFAULT"
-					>
-				</category>
-			</intent-filter>
-			<intent-filter
-				>
-				<action
-					android:name="com.dolby.LAUNCH_DS_APP"
-					>
-				</action>
-				<category
-					android:name="android.intent.category.DEFAULT"
 					>
 				</category>
 			</intent-filter>
@@ -269,7 +180,6 @@
 			android:icon="@7F08059F"
 			android:name="com.oplus.partners.dolby.DolbyTileService"
 			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-			android:enabled="true"
 			android:exported="true"
 			>
 			<intent-filter
