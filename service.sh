@@ -10,26 +10,24 @@ API=`getprop ro.build.version.sdk`
 
 # property
 resetprop -n ro.audio.ignore_effects false
-PROP=ro.build.version.oplusrom
-if [ ! "`getprop $PROP`" ]; then
-  resetprop -n $PROP V13.1.0
-fi
 resetprop -n ro.vendor.dolby.dax.version DAX3_3.6.0.12_r1
 resetprop -n ro.vendor.dolby.model PAFM00
 resetprop -n ro.vendor.dolby.device OP46C3
 resetprop -n ro.vendor.dolby.manufacturer OPLUS
 resetprop -n ro.vendor.dolby.brand OPLUS
 resetprop -n ro.oplus.audio.effect.type dolby
-resetprop -n vendor.audio.dolby.ds2.enabled false
-resetprop -n vendor.audio.dolby.ds2.hardbypass false
 resetprop -n ro.oplus.audio.dolby.equalizer_support true
-resetprop -n ro.oplus.audio.dolby.movieToMusic_support true
+#resetprop -n ro.oplus.audio.dolby.movieToMusic_support true
 resetprop -n ro.oplus.audio.dolby.mod_uuid false
 resetprop -n ro.oplus.audio.dolby.music_stream false
 resetprop -n oplus.dolby.effect.toast 0
 resetprop -n oplus.dolby.debug.switch 0
 #resetprop -p --delete persist.vendor.dolby.loglevel
 #resetprop -n persist.vendor.dolby.loglevel 0
+resetprop -p --delete persist.sys.assert.panic
+resetprop -n persist.sys.assert.panic true
+resetprop -n vendor.audio.dolby.ds2.enabled false
+resetprop -n vendor.audio.dolby.ds2.hardbypass false
 #resetprop -n vendor.audio.gef.debug.flags false
 #resetprop -n vendor.audio.gef.enable.traces false
 #resetprop -n vendor.dolby.dap.param.tee false
@@ -98,11 +96,10 @@ killall vendor.qti.hardware.vibrator.service\
  android.hardware.lights-service.xiaomi_mithorium\
  vendor.samsung.hardware.light-service\
  vendor.qti.hardware.lights.service\
- android.hardware.lights-service.qti\
- android.hardware.health-service.qti
+ android.hardware.lights-service.qti
 #skillall vendor.qti.hardware.display.allocator-service\
 #s vendor.qti.hardware.display.composer-service\
-#s camerahalserver qcrilNrd
+#s camerahalserver qcrilNrd mtkfusionrild
 #xkillall android.hardware.sensors@1.0-service\
 #x android.hardware.sensors@2.0-service\
 #x android.hardware.sensors@2.0-service-mediatek\
@@ -177,6 +174,23 @@ else
 fi
 
 # grant
+PKG=com.oplus.audio.effectcenter
+if appops get $PKG > /dev/null 2>&1; then
+  appops set $PKG WRITE_SETTINGS allow
+  if [ "$API" -ge 31 ]; then
+    pm grant $PKG android.permission.BLUETOOTH_CONNECT
+  fi
+  if [ "$API" -ge 30 ]; then
+    appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
+  fi
+  PKGOPS=`appops get $PKG`
+  UID=`dumpsys package $PKG 2>/dev/null | grep -m 1 Id= | sed -e 's|    userId=||g' -e 's|    appId=||g'`
+  if [ "$UID" ] && [ "$UID" -gt 9999 ]; then
+    UIDOPS=`appops get --uid "$UID"`
+  fi
+fi
+
+# grant
 PKG=com.oplus.audio.effectcenterui
 if appops get $PKG > /dev/null 2>&1; then
   appops set $PKG WRITE_SETTINGS allow
@@ -195,21 +209,6 @@ if appops get $PKG > /dev/null 2>&1; then
   if [ "$UID" ] && [ "$UID" -gt 9999 ]; then
     UIDOPS=`appops get --uid "$UID"`
   fi
-fi
-
-# grant
-PKG=com.oplus.audio.effectcenter
-appops set $PKG WRITE_SETTINGS allow
-if [ "$API" -ge 31 ]; then
-  pm grant $PKG android.permission.BLUETOOTH_CONNECT
-fi
-if [ "$API" -ge 30 ]; then
-  appops set $PKG AUTO_REVOKE_PERMISSIONS_IF_UNUSED ignore
-fi
-PKGOPS=`appops get $PKG`
-UID=`dumpsys package $PKG 2>/dev/null | grep -m 1 Id= | sed -e 's|    userId=||g' -e 's|    appId=||g'`
-if [ "$UID" ] && [ "$UID" -gt 9999 ]; then
-  UIDOPS=`appops get --uid "$UID"`
 fi
 
 # audio flinger
@@ -248,7 +247,7 @@ for SERVICE in $SERVICES; do
     PID=`pidof $SERVICE`
   fi
 done
-PROC="com.oplus.audio.effectcenter com.oplus.audio.effectcenterui"
+PROC=com.oplus.audio.effectcenter
 killall $PROC
 check_audioserver
 

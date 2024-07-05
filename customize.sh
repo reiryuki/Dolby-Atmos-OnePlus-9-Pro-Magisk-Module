@@ -84,6 +84,18 @@ else
   ui_print " "
 fi
 
+# oplus core
+if [ ! -d /data/adb/modules_update/OPlusCore ]\
+&& [ ! -d /data/adb/modules/OPlusCore ]; then
+  ui_print "- This module requires OPlus Core Magisk Module installed"
+  ui_print "  except you are in OPlus ROM."
+  ui_print "  Please read the installation guide!"
+  ui_print " "
+else
+  rm -f /data/adb/modules/OPlusCore/remove
+  rm -f /data/adb/modules/OPlusCore/disable
+fi
+
 # recovery
 mount_partitions_in_recovery
 
