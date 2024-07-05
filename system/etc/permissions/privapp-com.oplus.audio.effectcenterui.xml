@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <permissions>
     <privapp-permissions package="com.oplus.audio.effectcenterui">
+        <permission name="android.permission.READ_SAFETY_CENTER_STATUS"/>
+        <permission name="android.permission.SEND_SAFETY_CENTER_UPDATE"/>
         <permission name="android.permission.INTERACT_ACROSS_USERS"/>
         <permission name="android.permission.MODIFY_AUDIO_ROUTING"/>
     </privapp-permissions>
