@@ -5,8 +5,8 @@
 - The MIT license specified here is for the Magisk Module only, not for OnePlus & Dolby apps and blobs.
 
 ## Descriptions
-- Dolby Atmos soundfx equalizer ported from OnePlus 9 Pro (OnePlus9Pro) and integrated as a Magisk Module for all supported and rooted devices with Magisk
-- Global type soundfx
+- Equalizer sound effect ported from OnePlus 9 Pro (OnePlus9Pro) and integrated as a Magisk Module for all supported and rooted devices with Magisk
+- Global type sound effect
 - Conflicted with `vendor.dolby.hardware.dms@2.0-service` & `vendor.dolby_sp.hardware.dmssp@2.0-service`
 
 ## Sources
@@ -35,7 +35,8 @@
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
 - If you are using SUList, you need to allow list manually your home launcher app (enable show system apps) and reboot afterwards
-- If you have an issue with your in-built Spatial Audio, then install AOSP soundfx Remover also: https://github.com/reiryuki/AOSP-soundfx-Remover-Magisk-Module
+- If you have an issue with your in-built Spatial Audio, then install AOSP Sound Effects Remover also: https://github.com/reiryuki/AOSP-soundfx-Remover-Magisk-Module
+- If you have sensors issue (fingerprint, proximity, gyroscope, etc), then READ Optionals bellow!
 
 ## Optionals
 - https://t.me/androidryukimodsdiscussions/2616
