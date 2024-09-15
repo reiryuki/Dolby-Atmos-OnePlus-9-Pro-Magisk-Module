@@ -18,8 +18,8 @@
 - https://t.me/androidryukimods/1612
 
 ## Requirements
-- 64 bit architecture
-- Android 11 and up
+- ARM64 architecture
+- Android 11 (SDK 30) and up
 - Magisk or KernelSU installed (Recommended to use Magisk Delta/Kitsune Mask for systemless early init mount manifest.xml if your ROM is Read-Only https://t.me/androidryukimodsdiscussions/100091)
 - OPlus Core Magisk Module installed in non-OPlus ROM https://github.com/reiryuki/OPlus-Core-Magisk-Module
 
@@ -39,28 +39,26 @@
 - If you have sensors issue (fingerprint, proximity, gyroscope, etc), then READ Optionals bellow!
 
 ## Optionals
-- https://t.me/androidryukimodsdiscussions/2616
+- https://t.me/ryukinotes/8
 - Global: https://t.me/androidryukimodsdiscussions/60861
 - Stream: https://t.me/androidryukimodsdiscussions/26764
 
 ## Troubleshootings
-- https://t.me/androidryukimodsdiscussions/2617
+- https://t.me/ryukinotes/10
+- https://t.me/ryukinotes/11
 - Global: https://t.me/androidryukimodsdiscussions/29836
 
 ## Support & Bug Report
 - https://t.me/androidryukimodsdiscussions/2618
 
-## Tested on
-- Android 13 CrDroid ROM & AlphaDroid ROM
-- Android 14 LineageOS ROM
-
 ## Credits and Contributors
+- @HuskyDG
 - https://t.me/viperatmos
 - https://t.me/androidryukimodsdiscussions
 - @HELLBOY017
 - You can contribute ideas about this Magisk Module here: https://t.me/androidappsportdevelopment
 
 ## Sponsors
-- https://t.me/androidryukimodsdiscussions/2619
+- https://t.me/ryukinotes/25
 
 

@@ -3,9 +3,13 @@ ui_print " "
 
 # var
 UID=`id -u`
+[ ! "$UID" ] && UID=0
 LIST32BIT=`grep_get_prop ro.product.cpu.abilist32`
 if [ ! "$LIST32BIT" ]; then
   LIST32BIT=`grep_get_prop ro.system.product.cpu.abilist32`
+fi
+if [ ! "$LIST32BIT" ]; then
+  [ -f /system/lib/libandroid.so ] && LIST32BIT=true
 fi
 
 # log
@@ -56,21 +60,23 @@ else
 fi
 ui_print " "
 
-# bit
-if [ "$IS64BIT" == true ]; then
-  ui_print "- 64 bit architecture"
+# architecture
+NAME=arm64
+if [ "$ARCH" == $NAME ]; then
+  ui_print "- $ARCH architecture"
   ui_print " "
-  # 32 bit
   if [ "$LIST32BIT" ]; then
     ui_print "- 32 bit library support"
   else
     ui_print "- Doesn't support 32 bit library"
-    rm -rf $MODPATH/armeabi-v7a $MODPATH/x86\
-     $MODPATH/system*/lib $MODPATH/system*/vendor/lib
+    rm -rf $MODPATH/system*/lib\
+     $MODPATH/system*/vendor/lib
   fi
   ui_print " "
 else
-  abort "- This module is only for 64 bit architecture."
+  ui_print "! Unsupported $ARCH architecture."
+  ui_print "  This module is only for $NAME architecture."
+  abort
 fi
 
 # sdk
@@ -85,8 +91,7 @@ else
 fi
 
 # oplus core
-if [ ! -d /data/adb/modules_update/OPlusCore ]\
-&& [ ! -d /data/adb/modules/OPlusCore ]; then
+if [ ! -d /data/adb/modules/OPlusCore ]; then
   ui_print "- This module requires OPlus Core Magisk Module installed"
   ui_print "  except you are in OPlus ROM."
   ui_print "  Please read the installation guide!"
@@ -131,7 +136,7 @@ if [ -f $MODPATH/system_support$DIR/$LIB ]; then
   ui_print "  Please wait..."
   if ! grep -q $NAME $FILE; then
     ui_print "  Function not found."
-    ui_print "  Replaces /system$DIR/$LIB."
+    ui_print "  Replaces /system$DIR/$LIB systemlessly."
     mv -f $MODPATH/system_support$DIR/$LIB $MODPATH/system$DIR
     [ "$MES" ] && ui_print "$MES"
   fi
@@ -149,7 +154,7 @@ if [ -d $MODPATH/system_support/vendor$DIR/hw ]; then
     ui_print " "
   else
     ui_print "  Function not found."
-    ui_print "  Replaces /vendor$DIR/hw/*audio*.so."
+    ui_print "  Replaces /vendor$DIR/hw/*audio*.so systemlessly."
     mv -f $MODPATH/system_support/vendor$DIR/hw $MODPATH/system/vendor$DIR
     [ "$MES" ] && ui_print "$MES"
     ui_print " "
@@ -308,7 +313,7 @@ if [ "`grep_prop data.cleanup $OPTIONALS`" == 1 ]; then
   ui_print " "
 elif [ -d $DIR ]\
 && [ "$PREVMODNAME" != "$MODNAME" ]; then
-  ui_print "- Different version detected"
+  ui_print "- Different module name is detected"
   ui_print "  Cleaning-up $MODID data..."
   cleanup
   ui_print " "
@@ -571,7 +576,7 @@ for APP in $APPS; do
 done
 }
 replace_dir() {
-if [ -d $DIR ]; then
+if [ -d $DIR ] && [ ! -d $MODPATH$MODDIR ]; then
   REPLACE="$REPLACE $MODDIR"
 fi
 }
@@ -617,10 +622,10 @@ done
 APPS="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
 hide_oat
 if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
-  APPS="MusicFX DaxUI MotoDolbyDax3 MotoDolbyV3
+  APPS="$APPS MusicFX DaxUI MotoDolbyDax3 MotoDolbyV3
         DolbyAtmos daxService OPSoundTuner"
 else
-  APPS=MusicFX
+  APPS="$APPS MusicFX"
 fi
 hide_app
 
@@ -777,13 +782,15 @@ ui_print " "
 # function
 file_check_vendor() {
 for FILE in $FILES; do
-  DES=$VENDOR$FILE
-  DES2=$ODM$FILE
-  if [ -f $DES ] || [ -f $DES2 ]; then
-    ui_print "- Detected $FILE"
-    ui_print " "
-    rm -f $MODPATH/system/vendor$FILE
-  fi
+  DESS="$VENDOR$FILE $ODM$FILE"
+  for DES in $DESS; do
+    if [ -f $DES ]; then
+      ui_print "- Detected"
+      ui_print "$DES"
+      rm -f $MODPATH/system/vendor$FILE
+      ui_print " "
+    fi
+  done
 done
 }
 
