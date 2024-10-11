@@ -12,13 +12,13 @@
 ## Sources
 - https://dumps.tadiphone.dev/dumps/oneplus/oneplus9pro qssi-user-13-TP1A.220905.001-1698121073735-release-keys--IN
 - libhidlbase.so: CrDroid ROM Android 13
-- libmagiskpolicy.so: Kitsune Mask R65C33E4F
+- libmagiskpolicy.so: Kitsune Mask R6687BB53
 
 ## Screenshots
 - https://t.me/androidryukimods/1612
 
 ## Requirements
-- ARM64 architecture
+- arm64-v8a architecture
 - Android 11 (SDK 30) and up
 - Magisk or KernelSU installed (Recommended to use Magisk Delta/Kitsune Mask for systemless early init mount manifest.xml if your ROM is Read-Only https://t.me/androidryukimodsdiscussions/100091)
 - OPlus Core Magisk Module installed in non-OPlus ROM https://github.com/reiryuki/OPlus-Core-Magisk-Module
