@@ -126,6 +126,44 @@ SYSTEM_EXT=`realpath $MIRROR/system_ext`
 ODM=`realpath $MIRROR/odm`
 MY_PRODUCT=`realpath $MIRROR/my_product`
 
+# create
+mkdir -p $MODPATH/system/etc/vintf
+NAMES="vendor.dolby.hardware.dms@2.0-service
+       vendor.dolby_sp.hardware.dmssp@2.0-service"
+for NAME in $NAMES; do
+  if [ -f $VENDOR/bin/hw/$NAME ]; then
+    touch $MODPATH/system/vendor/bin/hw/$NAME
+  fi
+done
+if [ -d $ODM/bin/hw ] || [ -d $VENDOR/odm/bin/hw ]; then
+  mkdir -p $MODPATH/system/vendor/odm/bin/hw
+fi
+NAMES="vendor.dolby.hardware.dms@2.0-service
+       vendor.dolby_sp.hardware.dmssp@2.0-service
+       vendor.dolby_v3_6.hardware.dms360@2.0-service"
+for NAME in $NAMES; do
+  if [ -f $ODM/bin/hw/$NAME ]\
+  || [ -f $VENDOR/odm/bin/hw/$NAME ]; then
+    touch $MODPATH/system/vendor/odm/bin/hw/$NAME
+  fi
+done
+
+# check
+if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
+  ui_print "- Checking in-built Dolby apps..."
+  FILE=`find /system/app /system/priv-app /product/app\
+        /product/priv-app /product/preinstall /system_ext/app\
+        /system_ext/priv-app /vendor/app /vendor/euclid/product/app\
+        -type f -name XiaomyDolby.apk -o -name DolbyManager.apk`
+  if [ "$FILE" ]; then
+    ui_print "  Detected"
+    ui_print "$FILE"
+    ui_print "  You need to remove dolby.mod=0 to use this module,"
+    ui_print "  otherwise this module will not work."
+  fi
+  ui_print " "
+fi
+
 # check
 FILE=/bin/hw/vendor.dolby.media.c2@1.0-service
 if [ -f $SYSTEM$FILE ] || [ -f $VENDOR$FILE ]\
@@ -133,7 +171,7 @@ if [ -f $SYSTEM$FILE ] || [ -f $VENDOR$FILE ]\
 || [ -f $PRODUCT$FILE ]; then
   ui_print "! This module maybe conflicting with your"
   ui_print "  $FILE"
-  ui_print "  causes your internal storage mount failed"
+  ui_print "  causes your internal storage mount failure"
   ui_print " "
 fi
 
@@ -634,7 +672,7 @@ APPS="`ls $MODPATH/system/priv-app` `ls $MODPATH/system/app`"
 hide_oat
 if [ "`grep_prop dolby.mod $OPTIONALS`" == 0 ]; then
   APPS="$APPS MusicFX DaxUI MotoDolbyDax3 MotoDolbyV3
-        DolbyAtmos daxService OPSoundTuner"
+        DolbyAtmos daxService OPSoundTuner DolbySound"
 else
   APPS="$APPS MusicFX"
 fi
@@ -647,7 +685,7 @@ if echo "$PROP" | grep -q m; then
   ui_print "- Activating music stream..."
   sed -i 's|#m||g' $FILE
   sed -i 's|music_stream false|music_stream true|g' $MODPATH/service.sh
-  ui_print "  Sound FX will always be enabled"
+  ui_print "  The sound effect will always be enabled"
   ui_print "  and cannot be disabled by on/off togglers"
   ui_print " "
 else
@@ -714,14 +752,11 @@ if echo "$PROP" | grep -q c; then
   sed -i 's|#c||g' $FILE
   ui_print " "
 fi
-if echo "$PROP" | grep -q p; then
-  ui_print "- Activating patch stream..."
+if [ "`grep_prop dolby.game $OPTIONALS`" != 0 ]; then
   sed -i 's|#p||g' $FILE
-  ui_print " "
-fi
-if echo "$PROP" | grep -q g; then
-  ui_print "- Activating rerouting stream..."
   sed -i 's|#g||g' $FILE
+else
+  ui_print "- Does not use Dolby Game patch & rerouting stream"
   ui_print " "
 fi
 
@@ -843,23 +878,25 @@ fi
 }
 
 # mod
-NAME=libhidlbase.so
-NAME2=libhidldlbs.so
-if [ "$IS64BIT" == true ]; then
-  FILE=$MODPATH/system/lib64/$NAME
-  MODFILE=$MODPATH/system/vendor/lib64/$NAME2
-  rename_file
-fi
-if [ "$ABILIST32" ]; then
-  FILE=$MODPATH/system/lib/$NAME
-  MODFILE=$MODPATH/system/vendor/lib/$NAME2
-  rename_file
-fi
-if [ -f $MODPATH/system/vendor/lib64/$NAME2 ]\
-|| [ -f $MODPATH/system/vendor/lib/$NAME2 ]; then
+if grep -q libvndksupport.so /system/etc/*.txt; then
+  NAME=libhidlbase.so
+  NAME2=libhidldlbs.so
+  if [ "$IS64BIT" == true ]; then
+    FILE=$MODPATH/system/lib64/$NAME
+    MODFILE=$MODPATH/system/vendor/lib64/$NAME2
+    rename_file
+  fi
+  if [ "$ABILIST32" ]; then
+    FILE=$MODPATH/system/lib/$NAME
+    MODFILE=$MODPATH/system/vendor/lib/$NAME2
+    rename_file
+  fi
+  if [ -f $MODPATH/system/vendor/lib64/$NAME2 ]\
+  || [ -f $MODPATH/system/vendor/lib/$NAME2 ]; then
   FILE="$MODPATH/system/vendor/lib*/$NAME2
 $MODPATH/system/vendor/lib*/vendor.dolby_v3_6.hardware.dms360@2.0.so"
-  change_name
+    change_name
+  fi
 fi
 NAME=libstagefright_foundation.so
 NAME2=libstagefright_fndtn_v3_6.so

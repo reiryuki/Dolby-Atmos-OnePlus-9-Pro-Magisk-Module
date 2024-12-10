@@ -30,7 +30,7 @@
 - Recommended to use Magisk Delta/Kitsune Mask https://t.me/androidryukimodsdiscussions/100091
 - Install OPlus Core Magisk Module first if you are in non-OPlus ROM: https://github.com/reiryuki/OPlus-Core-Magisk-Module
 - Install this module https://www.pling.com/p/2110036/ via Magisk app or KernelSU app or Recovery if Magisk installed
-- Install AML Magisk Module https://t.me/androidryukimodsdiscussions/29836 only if using any other else audio mod module
+- Install AML Magisk Module https://t.me/ryukinotes/34 only if using any other else audio mod module
 - If you are using KernelSU, you need to disable Unmount Modules by Default in KernelSU app settings
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
@@ -40,13 +40,13 @@
 
 ## Optionals
 - https://t.me/ryukinotes/8
-- Global: https://t.me/androidryukimodsdiscussions/60861
+- Global: https://t.me/ryukinotes/35
 - Stream: https://t.me/androidryukimodsdiscussions/26764
 
 ## Troubleshootings
 - https://t.me/ryukinotes/10
 - https://t.me/ryukinotes/11
-- Global: https://t.me/androidryukimodsdiscussions/29836
+- Global: https://t.me/ryukinotes/34
 
 ## Support & Bug Report
 - https://t.me/androidryukimodsdiscussions/2618
