@@ -826,6 +826,32 @@ fi
 ui_print " "
 
 # function
+file_check_apex_for_vendor() {
+for FILE in $FILES; do
+  DESS="/apex$FILE $SYSTEM/apex$FILE"
+  for DES in $DESS; do
+    if [ -f $DES ]; then
+      ui_print "- Detected"
+      ui_print "$DES"
+      rm -f $MODPATH/system/vendor$FILE
+      ui_print " "
+    fi
+  done
+done
+}
+file_check_system_for_vendor() {
+for FILE in $FILES; do
+  DESS="$SYSTEM$FILE $SYSTEM_EXT$FILE"
+  for DES in $DESS; do
+    if [ -f $DES ]; then
+      ui_print "- Detected"
+      ui_print "$DES"
+      rm -f $MODPATH/system/vendor$FILE
+      ui_print " "
+    fi
+  done
+done
+}
 file_check_vendor() {
 for FILE in $FILES; do
   DESS="$VENDOR$FILE $ODM$FILE"
@@ -841,10 +867,13 @@ done
 }
 
 # check
-FILES=/etc/media_codecs_dolby_audio.xml
-file_check_vendor
 if [ "$IS64BIT" == true ]; then
-  FILES=/lib64/libqtigef.so
+  FILES=/*vndk*/lib64/libsqlite.so
+  file_check_apex_for_vendor
+  FILES=/lib64/vndk-*/libsqlite.so
+  file_check_system_for_vendor
+  FILES="/lib64/libsqlite.so
+         /lib64/libqtigef.so"
   file_check_vendor
 fi
 if [ "$ABILIST32" ]; then
@@ -855,6 +884,8 @@ if [ "$ABILIST32" ]; then
          /lib/libstagefright_soft_ac4dec_v3_6.so"
   file_check_vendor
 fi
+FILES=/etc/media_codecs_dolby_audio.xml
+file_check_vendor
 
 # function
 rename_file() {
