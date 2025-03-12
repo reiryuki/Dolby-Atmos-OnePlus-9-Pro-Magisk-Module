@@ -992,7 +992,7 @@ if grep -q libvndksupport.so /system/etc/*.txt; then
   if [ -f $MODPATH/system/vendor/lib64/$NAME2 ]\
   || [ -f $MODPATH/system/vendor/lib/$NAME2 ]; then
   FILE="$MODPATH/system/vendor/lib*/$NAME2
-$MODPATH/system/vendor/lib*/vendor.dolby_v3_6.hardware.dms360@2.0.so"
+$MODPATH/system/vendor/lib*/vendor.dolby*.hardware.dms*@*.so"
     change_name
   fi
 fi
@@ -1009,17 +1009,17 @@ if [ "$ABILIST32" ]; then
   rename_file
 fi
 FILE="$MODPATH/system/vendor/lib*/$NAME2
-$MODPATH/system/vendor/lib*/libdlbdsservice_v3_6.so
+$MODPATH/system/vendor/lib*/libdlbdsservice*.so
 $MODPATH/system/vendor/lib*/libstagefrightdolby.so
-$MODPATH/system/vendor/lib*/libstagefright_soft_ddpdec_v3_6.so
-$MODPATH/system/vendor/lib*/libstagefright_soft_ac4dec_v3_6.so"
+$MODPATH/system/vendor/lib*/libstagefright_soft_ddpdec*.so
+$MODPATH/system/vendor/lib*/libstagefright_soft_ac4dec*.so"
 change_name
 FILE=$MODPATH/system/vendor/etc/dolby/multimedia_dolby_dax_default.xml
 MODFILE=$MODPATH/system/vendor/etc/dolby/op_dolby_dax_default_v3_6.xml
 rename_file
 NAME=/odm/etc/dolby/multimedia_dolby_dax_default.xml
 NAME2=/vendor/etc/dolby/op_dolby_dax_default_v3_6.xml
-FILE=$MODPATH/system/vendor/lib*/libdlbdsservice_v3_6.so
+FILE=$MODPATH/system/vendor/lib*/libdlbdsservice*.so
 change_name
 if [ "`grep_prop dolby.mod $OPTIONALS`" != 0 ]; then
   NAME=dax_sqlite3.db
@@ -1069,6 +1069,60 @@ $MODPATH/.aml.sh"
   fi
   FILE="$MODPATH/system/vendor/lib*/$NAME2
 $MODPATH/system/vendor/lib*/vendor.dolby*.hardware.dms*@*-impl.so
+$MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service"
+  change_name
+  NAME=libdapparamstorage_v3_6.so
+  NAME2=libdaxparamstorage_v3_6.so
+  if [ "$IS64BIT" == true ]; then
+    FILE=$MODPATH/system/vendor/lib64/$NAME
+    MODFILE=$MODPATH/system/vendor/lib64/$NAME2
+    rename_file
+  fi
+  if [ "$ABILIST32" ]; then
+    FILE=$MODPATH/system/vendor/lib/$NAME
+    MODFILE=$MODPATH/system/vendor/lib/$NAME2
+    rename_file
+  fi
+  FILE="$MODPATH/system/vendor/lib*/$NAME2
+$MODPATH/system/vendor/lib*/soundfx/lib*wdlb*.so
+$MODPATH/system/vendor/lib*/libdapdsservice*.so
+$MODPATH/system/vendor/lib*/vendor.dolby*.hardware.dms*@*-impl.so
+$MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service"
+  change_name
+  NAME=vendor.dolby_v3_6.hardware.dms360@2.0.so
+  NAME2=vendor.dlbds_v3_6.hardware.dms360@2.0.so
+  if [ "$IS64BIT" == true ]; then
+    FILE=$MODPATH/system/vendor/lib64/$NAME
+    MODFILE=$MODPATH/system/vendor/lib64/$NAME2
+    rename_file
+  fi
+  if [ "$ABILIST32" ]; then
+    FILE=$MODPATH/system/vendor/lib/$NAME
+    MODFILE=$MODPATH/system/vendor/lib/$NAME2
+    rename_file
+  fi
+  FILE="$MODPATH/system/vendor/lib*/$NAME2
+$MODPATH/system/vendor/lib*/soundfx/lib*wdlb*.so
+$MODPATH/system/vendor/lib*/libdapdsservice*.so
+$MODPATH/system/vendor/lib*/vendor.dolby*.hardware.dms*@*-impl.so
+$MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service
+$MODPATH/system/vendor/lib*/libdeccfg*.so
+$MODPATH/system/vendor/lib*/libstagefright_soft_ddpdec*.so
+$MODPATH/system/vendor/lib*/libstagefright_soft_ac4dec*.so"
+  change_name
+  NAME=vendor.dolby_v3_6.hardware.dms360@2.0-impl.so
+  NAME2=vendor.dlbds_v3_6.hardware.dms360@2.0-impl.so
+  if [ "$IS64BIT" == true ]; then
+    FILE=$MODPATH/system/vendor/lib64/$NAME
+    MODFILE=$MODPATH/system/vendor/lib64/$NAME2
+    rename_file
+  fi
+  if [ "$ABILIST32" ]; then
+    FILE=$MODPATH/system/vendor/lib/$NAME
+    MODFILE=$MODPATH/system/vendor/lib/$NAME2
+    rename_file
+  fi
+  FILE="$MODPATH/system/vendor/lib*/$NAME2
 $MODPATH/system/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service"
   change_name
   sed -i 's|ro.oplus.audio.dolby.mod_uuid false|ro.oplus.audio.dolby.mod_uuid true|g' $MODPATH/service.sh
