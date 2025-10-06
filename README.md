@@ -13,6 +13,7 @@
 - https://dumps.tadiphone.dev/dumps/oneplus/oneplus9pro qssi-user-13-TP1A.220905.001-1698121073735-release-keys--IN
 - libsqlite.so: https://dumps.tadiphone.dev/dumps/zte/p855a01 msmnile-user-11-RKQ1.201221.002-20211215.223102-release-keys
 - libhidlbase.so: CrDroid ROM Android 13
+- libutils.so: LineageOS 23 Android 16 BP2A.250605.031.A2 1758630651
 - libmagiskpolicy.so: Kitsune Mask R6687BB53
 
 ## Screenshots
