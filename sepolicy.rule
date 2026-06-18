@@ -4,7 +4,6 @@
 allow system_server system_file file write
 
 # context
-create { system_lib_file vendor_file vendor_configs_file vendor_data_file vendor_media_data_file hal_dms_default_exec }
 allow { system_file system_lib_file vendor_file vendor_configs_file vendor_data_file vendor_media_data_file hal_dms_default_exec } labeledfs filesystem associate
 allow init { system_file system_lib_file vendor_file vendor_configs_file vendor_data_file vendor_media_data_file } { dir file } relabelfrom
 allow init hal_dms_default_exec file relabelfrom
