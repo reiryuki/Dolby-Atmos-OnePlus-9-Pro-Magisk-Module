@@ -74,6 +74,15 @@ FILE=$MODPATH/sepolicy.rule
 FILE=$MODPATH/sepolicy.pfsd
 sepolicy_sh
 
+# conflict
+NAMES="ainur_narsil zyx_ainur_silmaril"
+for NAME in $NAMES; do
+  DIR=/data/adb/modules/$NAME
+  if [ -d $DIR ] && [ ! -f $DIR/remove ]; then
+    touch $DIR/remove
+  fi
+done
+
 # run
 . $MODPATH/copy.sh
 . $MODPATH/.aml.sh
@@ -107,6 +116,10 @@ chcon -R u:object_r:vendor_configs_file:s0 $MODPATH$MODSYSTEM/vendor/odm/etc
 chcon u:object_r:vendor_hal_file:s0 $MODPATH$MODSYSTEM/vendor/lib*/hw
 #chcon u:object_r:hal_dms_default_exec:s0 $MODPATH$MODSYSTEM/vendor/bin/hw/vendor.dolby*.hardware.dms*@*-service
 #chcon u:object_r:hal_dms_default_exec:s0 $MODPATH$MODSYSTEM/vendor/odm/bin/hw/vendor.dolby*.hardware.dms*@*-service
+NAMES="libhwbinder libhidl*.so libut*.so"
+for NAME in $NAMES; do
+  chcon u:object_r:same_process_hal_file:s0 $MODPATH$MODSYSTEM/vendor/lib*/$NAME
+done
 
 # function
 mount_odm() {
