@@ -176,7 +176,7 @@ M=/system/etc/vintf/manifest.xml
 rm -f $MODPATH$M
 FILE="/*/etc/vintf/manifest.xml /*/*/etc/vintf/manifest.xml
       /*/etc/vintf/manifest/*.xml /*/*/etc/vintf/manifest/*.xml"
-if ! grep -A2 vendor.dolby_v3_6.hardware.dms360 $FILE | grep 2.0; then
+if ! grep -A2 '>vendor.dolby_v3_6.hardware.dms360<' $FILE | grep 2.0; then
   cp -af $M $MODPATH$M
   if [ -f $MODPATH$M ]; then
     sed -i '/<manifest/a\

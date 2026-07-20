@@ -18,6 +18,10 @@
 
 ## Changelog
 
+v3.8
+- Fix manifest.xml detection bug in some ROMs
+- Fix sepolicy denial
+
 v3.7
 - Removes conflicted weird modules
 - Check functions in mirror /apex files instead of mirror /system if exist
@@ -28,7 +32,7 @@ v3.6
 - Support NoMount metamodule
 - Resets module folders/files permissions at post-fs-data
 - Move _uninstall.log to /data/adb/logs/
-- Hides LunarisDolby.apk
+- Hides in-bulit LunarisDolby.apk
 
 v3.5
 - Update libmagiskpolicy.so from Magisk (stable) 30.7 (30700) (fixes selinux denials in KernelSU)
@@ -58,10 +62,6 @@ v3.0
 - Fake Kitsune Mask detection at installation
 - Improve /odm and /my_product support detection
 
-v2.9
-- Fix script bug at installation for libsqlite.so detections
-- Fix selinux denials
-
 ## Screenshots
 https://t.me/androidryukimods/1612
 
@@ -79,7 +79,7 @@ Possibility of bootloop or even softbrick or a service failure on Read-Only ROM 
 - Recommended to use Magisk Delta/Kitsune Mask https://t.me/ryukinotes/49
 - If you are using KernelSU, you need to disable Unmount Modules by Default in KernelSU app settings and install https://github.com/KernelSU-Modules-Repo/meta-overlayfs or https://github.com/KernelSU-Modules-Repo/magic_mount_rs or https://github.com/KernelSU-Modules-Repo/hybrid_mount or https://github.com/maxsteeel/nomount first depending on ROM compatibility
 - Install OPlus Core Magisk Module first if you are in non-OPlus ROM: https://github.com/reiryuki/OPlus-Core-Magisk-Module
-- Install this module https://devuploads.com/xls2876q9z1s via Magisk app or Kitsune Mask app or KernelSU app or Apatch app or Recovery if Magisk or Kitsune Mask installed
+- Install this module https://github.com/reiryuki/Dolby-Atmos-OnePlus-9-Pro-Magisk-Module via Magisk app or Kitsune Mask app or KernelSU app or Apatch app or Recovery if Magisk or Kitsune Mask installed
 - Install AML Magisk Module https://t.me/ryukinotes/34 only if using any other else audio mod module
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
