@@ -27,7 +27,7 @@ https://t.me/androidryukimods/1612
 
 ## Download Links and Changelog
 
-v3.9-R https://github.com/reiryuki/Dolby-Atmos-OnePlus-9-Pro-Magisk-Module
+v3.9-R https://move2link.co/0435254
 - Update libmagiskpolicy.so from Magisk (debug) 31.0 (31000)
 - Prepare /storage/emulated/"$UID"/Android/data/$PKG/ directories
 - Add a new optional dolby.mod_xml to let users to use any modified/custom multimedia_dolby_dax_default.xml. Please read Optionals below.
