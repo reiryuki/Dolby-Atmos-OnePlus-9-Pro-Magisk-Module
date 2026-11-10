@@ -4,9 +4,8 @@
 - OnePlus & Dolby apps and blobs are owned by OnePlus™ & Dolby™.
 - The MIT license specified here is for the Magisk Module only, not for OnePlus & Dolby apps and blobs.
 
-## Descriptions
-- Equalizer sound effect ported from OnePlus 9 Pro (OnePlus9Pro) and integrated as a Magisk Module for all supported and rooted devices with Magisk
-- Global type sound effect
+## Description
+- Equalizer global type sound effect ported from OnePlus 9 Pro (OnePlus9Pro) and integrated as a Magisk Module for all supported and rooted devices with Magisk
 - Conflicted with `vendor.dolby.hardware.dms@2.0-service` & `vendor.dolby_sp.hardware.dmssp@2.0-service`
 
 ## Sources
@@ -14,11 +13,26 @@
 - libsqlite.so: https://dumps.tadiphone.dev/dumps/zte/p855a01 msmnile-user-11-RKQ1.201221.002-20211215.223102-release-keys
 - libhidlbase.so: CrDroid ROM Android 13
 - libutils.so: LineageOS 23 Android 16 BP2A.250605.031.A2 1758630651
-- libmagiskpolicy.so: Magisk (stable) 30.7 (30700)
+- libmagiskpolicy.so: Magisk (debug) 31.0 (31000)
 
-## Changelog
+## Screenshots
+https://t.me/androidryukimods/1612
 
-v3.8
+## Requirements
+- arm64-v8a architecture
+- Android 11 (SDK 30) and up
+- HIDL audio service
+- Magisk or Kitsune Mask or KernelSU or Apatch installed (Recommended to use Magisk Delta/Kitsune Mask for systemless early init mount manifest.xml if your ROM is Read-Only https://t.me/ryukinotes/49)
+- OPlus Core Magisk Module installed in non-OPlus ROM https://github.com/reiryuki/OPlus-Core-Magisk-Module
+
+## Download Links and Changelog
+
+v3.9 https://github.com/reiryuki/Dolby-Atmos-OnePlus-9-Pro-Magisk-Module
+- Update libmagiskpolicy.so from Magisk (debug) 31.0 (31000)
+- Prepare /storage/emulated/"$UID"/Android/data/$PKG/ directories
+- Add a new optional dolby.mod_xml to let users to use any modified/custom multimedia_dolby_dax_default.xml. Please read Optionals below.
+
+v3.8 https://move2link.co/c2b690c
 - Fix manifest.xml detection bug in some ROMs
 - Fix sepolicy denial
 
@@ -35,7 +49,7 @@ v3.6
 - Hides in-bulit LunarisDolby.apk
 
 v3.5
-- Update libmagiskpolicy.so from Magisk (stable) 30.7 (30700) (fixes selinux denials in KernelSU)
+- Update libmagiskpolicy.so from Magisk (stable) 30.7 (30700) (fixes sepolicy denials in KernelSU)
 - Does not disable raw playback (You can use Audio Compatibility Patch Reborn Magisk Module instead)
 
 v3.4
@@ -62,33 +76,23 @@ v3.0
 - Fake Kitsune Mask detection at installation
 - Improve /odm and /my_product support detection
 
-## Screenshots
-https://t.me/androidryukimods/1612
-
-## Requirements
-- arm64-v8a architecture
-- Android 11 (SDK 30) and up
-- HIDL audio service
-- Magisk or Kitsune Mask or KernelSU or Apatch installed (Recommended to use Magisk Delta/Kitsune Mask for systemless early init mount manifest.xml if your ROM is Read-Only https://t.me/ryukinotes/49)
-- OPlus Core Magisk Module installed in non-OPlus ROM https://github.com/reiryuki/OPlus-Core-Magisk-Module
+## Download Tutorial
+https://t.me/ryukinotes/97
 
 ## WARNING!!!
 Possibility of bootloop or even softbrick or a service failure on Read-Only ROM if you don't use Magisk Delta/Kitsune Mask.
 
-## Installation Guide & Download Link
+## Installation Guide
 - Recommended to use Magisk Delta/Kitsune Mask https://t.me/ryukinotes/49
 - If you are using KernelSU, you need to disable Unmount Modules by Default in KernelSU app settings and install https://github.com/KernelSU-Modules-Repo/meta-overlayfs or https://github.com/KernelSU-Modules-Repo/magic_mount_rs or https://github.com/KernelSU-Modules-Repo/hybrid_mount or https://github.com/maxsteeel/nomount first depending on ROM compatibility
 - Install OPlus Core Magisk Module first if you are in non-OPlus ROM: https://github.com/reiryuki/OPlus-Core-Magisk-Module
-- Install this module https://move2link.co/c2b690c via Magisk app or Kitsune Mask app or KernelSU app or Apatch app or Recovery if Magisk or Kitsune Mask installed
+- Install this module via Magisk app or Kitsune Mask app or KernelSU app or Apatch app or Recovery if Magisk or Kitsune Mask installed
 - Install AML Magisk Module https://t.me/ryukinotes/34 only if using any other else audio mod module
 - Reboot
 - If you are using KernelSU, you need to allow superuser list manually all package name listed in package.txt (and your home launcher app also) (enable show system apps) and reboot afterwards
 - If you are using SUList, you need to allow list manually your home launcher app (enable show system apps) and reboot afterwards
 - If you have an issue with your in-built Spatial Audio, then install AOSP Sound Effects Remover also: https://github.com/reiryuki/AOSP-soundfx-Remover-Magisk-Module
 - If you have vibrator, camera, charging/USB, SIM card/RIL, display, brightness, WiFi, thermal, and sensors issues (fingerprint, proximity, gyroscope, etc.), then install https://github.com/reiryuki/Hardware-Services-Restarter-Magisk-Module also
-
-## Download Tutorial
-https://t.me/ryukinotes/97
 
 ## Optionals
 - https://t.me/ryukinotes/8
@@ -100,7 +104,7 @@ https://t.me/ryukinotes/97
 - https://t.me/ryukinotes/11
 - Global: https://t.me/ryukinotes/34
 
-## Support & Bug Report
+## Support and Bug Report
 - https://t.me/ryukinotes/54
 - If you don't do above, issues will be closed immediately
 
@@ -111,7 +115,7 @@ https://t.me/ryukinotes/97
 - @HELLBOY017
 - https://t.me/androidappsportdevelopment
 
-## Sponsors
+## Sponsors and Donation
 https://t.me/ryukinotes/25
 
 
