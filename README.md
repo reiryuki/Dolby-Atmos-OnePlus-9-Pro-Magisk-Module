@@ -71,11 +71,6 @@ v3.1
 - Add libutils.so as system_support
 - Abort installation if fail to mount mirror system
 
-v3.0
-- Fix SDK detection bug in AudioEffectCenterUI.apk
-- Fake Kitsune Mask detection at installation
-- Improve /odm and /my_product support detection
-
 ## Download Tutorial
 https://t.me/ryukinotes/97
 
