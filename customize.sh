@@ -1266,14 +1266,21 @@ MODSYSTEM=/system
 # unmount
 unmount_mirror
 
-
-
-
-
-
-
-
-
+# prepare
+PKG=com.oplus.audio.effectcenterui
+DIR=/storage/emulated/"$UID"/Android/data/$PKG/files
+DIR2=/storage/emulated/"$UID"/Android/data/$PKG/cache
+PKG=com.oplus.audio.effectcenter
+DIR3=/storage/emulated/"$UID"/Android/data/$PKG/files
+DIR4=/storage/emulated/"$UID"/Android/data/$PKG/cache
+ui_print "- Creating directories:"
+ui_print "  $DIR"
+mkdir -p $DIR
+ui_print "  $DIR2"
+mkdir -p $DIR2
+ui_print "  $DIR3"
+mkdir -p $DIR4
+ui_print " "
 
 
 
